@@ -340,14 +340,6 @@ self.port.on('response_cache', function(response) {
 // CSS laden
 addCSS();
 
-// UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A ENTER
-var konami = new Konami()
-konami.code = function() {
-    $('#header h1').css('background', 'url(http://upload.wikimedia.org/wikipedia/de/thumb/a/a6/GameOneLogo.png/220px-GameOneLogo.png) no-repeat 30px 30px');
-    $('#header h1').css('width', '250px');
-}
-konami.load()
-
 // Downloads für alle Videos holen
 $('div.player_swf embed').each(getDownloads);
 
