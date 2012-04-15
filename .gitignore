@@ -1,4 +1,5 @@
 *.xpi
+*.crx
 *.backup
 *~
 *.sh
