@@ -290,18 +290,10 @@ function response_flvgen(data, id)
 /* Main
  * ==== */
 
-// Downloads für alle Videos holen
+// Downloads unter alle Videos einfügen
 $('div.player_swf embed').each(getDownloads);
 
-/*
-if($('img[src="/images/dummys/dummy_agerated.jpg"]').length == 0) {
-    if(document.getElementById('commentable_id')) {
-        var commentable_id = document.getElementById('commentable_id').getAttribute('value');
-        self.port.emit('add_to_cache', {id: commentable_id, url: window.location.href});
-    }
-} else { // Altersbeschränkte Inhalte mit einer Altersfreigabe versehen
-    $('img[src="/images/dummys/dummy_agerated.jpg"]').each(function(i) {
-        $(this).replaceWith(createAgeCheck());
-    });
-}
-*/
+// altersbeschränkten Inhalte verarbeiten
+$('img[src="/images/dummys/dummy_agerated.jpg"]').each(function(i) {
+  $(this).replaceWith(createAgeCheck());
+});
