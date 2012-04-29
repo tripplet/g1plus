@@ -1,5 +1,5 @@
 .g1plus a {
-  background: #AC9C64;
+  background-color: #AC9C64;
   color: #2B2717;
   font-size: 10px;
   padding: 4px;
@@ -18,12 +18,12 @@
 }
 
 .g1plus a:hover {
-  background: #BDB184;
+  background-color: #BDB184;
   border-color: #CFC6A5;
 }
 
 .downloads.g1plus {
-  background: #262626;
+  background-color: #262626;
   background-repeat: no-repeat;
   background-position: center right;
   font-size: 12px;
