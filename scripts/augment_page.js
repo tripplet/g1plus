@@ -26,6 +26,7 @@ function createDownloadContainer(id)
     var downloads = document.createElement('div');
     downloads.setAttribute('id', id)
     downloads.setAttribute('class', 'downloads g1plus');
+    downloads.style.backgroundImage = 'url(' + chrome.extension.getURL('icons/icon_64.png') + ')';
 
     var heading = document.createElement('h4');
     heading.textContent = 'Downloads';

@@ -24,6 +24,8 @@
 
 .downloads.g1plus {
   background: #262626;
+  background-repeat: no-repeat;
+  background-position: center right;
   font-size: 12px;
   letter-spacing: normal;
   line-height: 18px;
