@@ -176,7 +176,7 @@ function createAgeCheck()
 			var commentable_id = document.getElementById('commentable_id').getAttribute('value');
 			$('div.agecheck').empty();
 			$('div.agecheck').addClass('loading');
-			self.port.emit('request_cache', {id: commentable_id, url: window.location.href});
+			request_cachedata(commentable_id);
 		}
 		return false;
 	});
@@ -252,7 +252,8 @@ function response_mediagen(data, id)
 	$(videos).each(function () {
 		var downlink = createDownloadLink(this.url,
 			this.mime + ' ' + this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
-		downloads.appendChild(downlink);
+    if (downloads)
+      downloads.appendChild(downlink);
 	});
 }
 
@@ -290,6 +291,58 @@ function response_flvgen(data, id)
 		downloads.appendChild(this);
 	});
 }
+
+/**
+ * Wrapper function um this variable aus dem jeweiligen context and die jeweilige Funktion zu übergeben
+ * http://stackoverflow.com/questions/939032/jquery-pass-more-parameters-into-callback#answer-939185
+ */
+function replace_restricted_wrapper(index, element) {
+  return function(response) {
+    if(response.data && response.data[String(index + 1)]) {
+      var ids = response.data[String(index + 1)];
+      for(j in ids) {
+        console.log('data:' + ids[j]);
+        var id = ids[j];
+        if(id.indexOf('gallery') > -1) {
+            $(element).replaceWith(createWarning('Bei diesem altersbeschränkten Inhalt handelt es sich um eine Bilder-Galerie, Diese werden derzeit nicht von G1Plus erfasst. Dies kann sich in zukünftigen Versionen ändern, wenn gesteigertes Interesse besteht (<a href="https://github.com/g1plus/g1plus/issues/1">Issue #1</a>)'));
+        } else {
+            var url = 'http://media.mtvnservices.com/mgid:gameone:video:mtvnn.com:video_meta-' + id;
+            if(id.indexOf('http') > -1) {
+                url = id;
+            }
+            var player_swf = document.createElement('div');
+            player_swf.setAttribute('class', 'player_swf');
+            var player = createPlayer(url);
+            player_swf.appendChild(player);
+            $(element).after(player_swf);
+            if(id.indexOf('http') == -1) {
+                player.getDownloads = getDownloads;
+                player.getDownloads();
+            }
+        }
+      }
+      $(element).remove();
+    } else {
+      $(element).replaceWith(createWarning('Für diesen altersbeschränkten Inhalt liegt keine Referenz im Cache vor.'));
+    }
+  }
+}
+
+function request_cachedata(commentable_id)
+{
+  var page = '1';
+  var href = window.location.href.split('?').pop().split('/');
+  if(href[href.length - 2] == 'part') {
+      page = href[href.length - 1];
+  }
+
+  // alle gesperreten Inhalte verarbeiten
+  $('div.agecheck').each(function(index) {
+    // Anfrage an backgroundPage für id
+    chrome.extension.sendRequest({func: "getData", id: commentable_id}, replace_restricted_wrapper(index, this));
+  });
+}
+
 
 
 /* Main
