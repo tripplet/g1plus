@@ -1,131 +1,58 @@
-/* Import
- * ====== */
-
-var data = self.data;
-
 /* Const
  * ===== */
 
 var cacheMirrors = ['http://pastebin.com/raw.php?i=tVLCAjZc',
                     'http://g1plus.x10.mx/cache.json'];
 
+var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
+var backup_cache_json = false;
+
+
+
+/**
+ * Altersfreigabe Daten laden die mit der Erweiterung als Backup/Fallback kommen
+ * Werden direkt aus der Date geladen da der lokale Storage der von einer Extension
+ * verändert werden kann auf 512 Einträge mit je 2KB begrenzt ist.
+ * http://code.google.com/chrome/extensions/trunk/storage.html
+ */
+var xhr = new XMLHttpRequest();
+
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    backup_cache_json = JSON.parse(xhr.responseText);
+  }
+};
+
+xhr.open("GET", backup_cache_url, false);
+
+try {
+  xhr.send();
+} catch(e) {
+  console.log('Couldn\'t load backup_cache');
+}
+
 /* Methoden
  * ======== */
-
-/**
- * Synchronsieren des lokalen cache mit der letzten Version
- * auf pastebin oder eines Fallback-Mirrors, wenn neuer.
- *
- * @param onSync  Callback der nach dem Sync-Vorgang aufgerufen wird.
- *                Der Status des Sync-Versuches wird übergeben.
- */
-function syncCache(mirror, onSync) {
-    var req = request.Request({
-        url: cacheMirrors[mirror],
-        onComplete: function(response) {
-            if(response.status == 200) {
-                var json = JSON.parse(response.text);
-                if(storage.cache['update']) {
-                    if(Date.parse(json['update']) > Date.parse(storage.cache['update'])) {
-                        storage.cache = json;
-                    }
-                } else {
-                    storage.cache = json;
-                }
-                onSync(response.status);
-            } else {
-                if(cacheMirrors[mirror + 1]) {
-                    syncCache(mirror + 1, onSync);
-                } else {
-                    onSync(response.status);
-                }
-            }
-        }
-    });
-    req.get();
+function storeData(id, data) {
+  storage.local.set({id : data}, function() {
+    console.log('data with id: ' + id + ' saved');
+  });
 }
 
-/**
- * Filter die Content-Elemente aus einer Seite.
- *
- * @param src  Quelltext der Seite.
- *
- * @return Die Content-Elemente reduziert auf ihre Referenzen.
- */
-function getContentElements(src) {
-    var re = /#gallery_\d*|video_meta-\w*|<embed(.*)/g;
+function getData(id) {
+  console.log('getData');
+  // first look into backup_cache
+  if (id in backup_cache_json) {
+    return backup_cache_json[id];
+  }
+}
 
-    var result = new Array();
 
-    while((match = re.exec(src)) != null) {
-        if(match[0].indexOf('embed') > -1) {
-            result.push(match[0].split('"')[1]);
-        } else if(match[0].indexOf('video_meta-') > -1) {
-            result.push(match[0].split('-')[1]);
-        } else {
-            result.push(match[0].split('#')[1]);
-        }
+/* Message-Request Listener
+ * ======================== */
+chrome.extension.onRequest.addListener(
+  function(request, sender, sendResponse) {
+    if (request.func == "getData") {
+      sendResponse({data: getData(request.id)});
     }
-
-    return result;
-}
-
-/**
- * Erzeugt ein Cache-Objekt aus der Differenz zweier HTML-Seiten.
- *
- * @param pre  Die Seite mit gesperrten Inhalten.
- * @param post Die Seite mit 18er-Inhalten.
- *
- * @return Cache-Objekt
- */
-function diff(pre, post) {
-    var result = {};
-
-    var re = /dummy_agerated.jpg/g;
-
-    if(!re.test(post)) {
-        var post_elems = getContentElements(post);
-        var pre_elems = getContentElements(pre);
-
-        for(i in pre_elems) {
-            var index = post_elems.indexOf(pre_elems[i]);
-            if(index > -1) {
-                post_elems.splice(index, 1);
-            }
-        }
-
-        var dummy_count = 0;
-        var match = re.exec(pre);
-
-        while(match) {
-            ++dummy_count;
-            var src = post_elems.shift();
-            result[String(dummy_count)] = new Array(src);
-            match = re.exec(pre);
-        }
-
-        if(dummy_count < post_elems) {
-            result[String(dummy_count)].concat(post_elems);
-        }
-    }
-
-    return result;
-}
-
-/**
- * Legt ein Cache-Objekt in den lokalen Storage.
- *
- * @param id  id der Seite
- * @param page  page der Seite
- * @param cache Cache-Objekt
- */
-function addToCache(id, page, cache) {
-    if(cache['1'] && cache['1'].length > 0) {
-        if(!storage.cache[id]) {
-            storage.cache[id] = {};
-        }
-        if(!storage.cache[id][page]) {
-            storage.cache[id][page] = cache;
-        }
-    }
-}
+});
