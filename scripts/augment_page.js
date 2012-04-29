@@ -41,6 +41,11 @@ function createWarning(msg)
     warning.setAttribute('class', 'warn_text');
     $(warning).html(msg);
 
+    var g1plus_icon = document.createElement('img');
+    g1plus_icon.setAttribute('class', 'g1plus_small_icon');
+    g1plus_icon.src = chrome.extension.getURL('icons/icon_64.png');
+    warning.appendChild(g1plus_icon);
+
     return warning;
 }
 

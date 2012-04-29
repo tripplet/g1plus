@@ -36,3 +36,13 @@
 .g1plus h4 {
   font-weight: bold;
 }
+
+.warn_text {
+  background-color: #77491a !important;
+}
+
+.g1plus_small_icon {
+  height: 32px;
+  float: right;
+  margin-top: -8px;
+}
