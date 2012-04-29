@@ -3,17 +3,31 @@
   "version": "0.3.3",
   "manifest_version": 2,
   "description": "Download-Links und Wiedergabe von Ab-18-Inhalten nach Altersverifikation für GameOne.de auch innerhalb der Sperrzeiten",
-  "icons": { "128": "icons/icon_128.png" },
+  "icons": {
+    "128": "icons/icon_128.png"
+  },
   "permissions": [
+    "storage",
     "http://*.gameone.de/*",
-		"http://videos.mtvnn.com/*",
-		"http://de.esperanto.mtvi.com/*"
+    "http://videos.mtvnn.com/*",
+    "http://de.esperanto.mtvi.com/*",
+    "unlimitedStorage"
   ],
+  "background": {
+    "scripts": ["scripts/background.js"]
+  },
   "content_scripts": [
     {
-      "matches": ["http://*.gameone.de/*"],
-			"css": [ "data/style.css" ],
-      "js": [ "data/jquery.min.js", "data/augmentpage.js", "lib/main.js"]
+      "matches": [
+        "http://*.gameone.de/*"
+      ],
+      "css": [
+        "style/style.css"
+      ],
+      "js": [
+        "scripts/jquery.min.js",
+        "scripts/augmentpage.js"
+      ]
     }
   ]
 }
