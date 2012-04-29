@@ -1,8 +1,7 @@
 Chrome-Addon-Fork
 =================
 
-Alle Änderungen die für die Chrome Erweiterung durchgeführt wurden befinden sich im Branch "chrome"
-Der Master Branch enthält nur Modifikationen die ohne Problem in die Firefox Erweiterung übernommen werden könnten.
+Fork vom g1plus Addon für Chrome Download: https://github.com/tripplet/g1plus/downloads
 
 Beschreibung
 ============
