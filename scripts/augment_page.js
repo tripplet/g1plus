@@ -296,10 +296,10 @@ function response_flvgen(data, id)
  * Wrapper function um this variable aus dem jeweiligen context and die jeweilige Funktion zu übergeben
  * http://stackoverflow.com/questions/939032/jquery-pass-more-parameters-into-callback#answer-939185
  */
-function replace_restricted_wrapper(index, element) {
+function replace_restricted_wrapper(page, index, element) {
   return function(response) {
-    if(response.data && response.data[String(index + 1)]) {
-      var ids = response.data[String(index + 1)];
+    if(response.data && response.data[page][String(index + 1)]) {
+      var ids = response.data[page][String(index + 1)];
       for(j in ids) {
         console.log('data:' + ids[j]);
         var id = ids[j];
@@ -339,7 +339,7 @@ function request_cachedata(commentable_id)
   // alle gesperreten Inhalte verarbeiten
   $('div.agecheck').each(function(index) {
     // Anfrage an backgroundPage für id
-    chrome.extension.sendRequest({func: "getData", id: commentable_id}, replace_restricted_wrapper(index, this));
+    chrome.extension.sendRequest({func: "getData", id: commentable_id}, replace_restricted_wrapper(page, index, this));
   });
 }
 
