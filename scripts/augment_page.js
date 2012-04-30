@@ -35,6 +35,13 @@ function createDownloadContainer(id)
     return downloads;
 }
 
+function setDuration(duration, id) {
+  var video_length = document.createElement('h5');
+  video_length.setAttribute('class', 'duration');
+  video_length.textContent = '(' + duration + 'min)';
+  $('#downloads_' + id).append(video_length);
+}
+
 function createWarning(msg)
 {
     var warning = document.createElement('div');
@@ -99,7 +106,8 @@ function getDownloads()
     var src = this.getAttribute('src');
     var id = src.split('-').pop();
     this.parentNode.appendChild(createDownloadContainer('downloads_' + id));
-    $.get('http://gameone.de/api/mrss/' + src, function(data) { response_mrss(data, id) } );
+    node = this;
+    $.get('http://gameone.de/api/mrss/' + src, response_mrss(id, node) );
 }
 
 /**
@@ -192,29 +200,40 @@ function createAgeCheck()
  * Behandeln der Rückgabe der mrss-API. Inhalte die von der flvgen-API geliefert
  * werden, werden gesondert behandelt. Doppelte Urls werden gefiltert.
  */
-function response_mrss(data, id)
+function response_mrss(id, element)
 {
-	var urls = new Array();
-	$(data).filterNode('media:content').each(function() {
-		var url = this.getAttribute('url');
-		var callback = 'response_mediagen';
+	return function(data) {
+    var urls = new Array();
+  	$(data).filterNode('media:content').each(function() {
+  		var url = this.getAttribute('url');
+      var duration = Math.round(parseFloat(this.getAttribute('duration')) / 60);
+      var callback = 'response_mediagen';
 
-		if(url.indexOf('mediaGen.jhtml') != -1) {
-			url = 'http://de.esperanto.mtvi.com/www/xml/flv/flvgen.jhtml?vid=' + url.split(':').pop();
-			callback = 'response_flvgen';
-		} else
-			url = url.split('?')[0];
+  		if(url.indexOf('mediaGen.jhtml') != -1) {
+  			url = 'http://de.esperanto.mtvi.com/www/xml/flv/flvgen.jhtml?vid=' + url.split(':').pop();
+  			callback = 'response_flvgen';
+  		} else
+  			url = url.split('?')[0];
 
-		if(urls.indexOf(url) == -1) {
-			urls.push(url);
+  		if(urls.indexOf(url) == -1) {
+  			urls.push(url);
+        setDuration(duration, id);
 
-			if (callback == 'response_mediagen') {
-			  $.get(url, function(data) { response_mediagen(data, id) } );
-			} else {
-			  $.get(url, function(data) { response_flvgen(data, id) } );
-			}
-		}
-	});
+  			if (callback == 'response_mediagen') {
+  			  $.get(url, function(data) { response_mediagen(data, id) } );
+  			} else {
+  			  $.get(url, function(data) { response_flvgen(data, id) } );
+  			}
+  		}
+  	});
+
+    var preview_image = $(data).filterNode('image').first();
+
+    if (preview_image.length != 0) {
+      element.parentNode.style.backgroundImage = 'url(' + preview_image.attr('url') + ')';
+      element.parentNode.style.backgroundRepeat = 'no-repeat';
+    }
+  }
 }
 
 /**
