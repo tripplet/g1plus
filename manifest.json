@@ -12,10 +12,10 @@
   ],
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "http://*.gameone.de/*",
     "http://videos.mtvnn.com/*",
     "http://de.esperanto.mtvi.com/*",
-    "unlimitedStorage"
   ],
   "background": {
     "scripts": ["scripts/background_page.js"]
@@ -31,7 +31,8 @@
       "js": [
         "scripts/jquery.min.js",
         "scripts/augment_page.js"
-      ]
+      ],
+      "run_at": "document_end"
     }
   ]
 }
