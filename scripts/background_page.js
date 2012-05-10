@@ -5,9 +5,8 @@ var cacheMirrors = ['http://pastebin.com/raw.php?i=tVLCAjZc',
                     'http://g1plus.x10.mx/cache.json'];
 
 var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
-var backup_cache_json = false;
-
-
+var backup_cache = false;
+var online_cache = false;
 
 /**
  * Altersfreigabe Daten laden die mit der Erweiterung als Backup/Fallback kommen
@@ -15,38 +14,86 @@ var backup_cache_json = false;
  * verändert werden kann auf 512 Einträge mit je 2KB begrenzt ist.
  * http://code.google.com/chrome/extensions/trunk/storage.html
  */
-var xhr = new XMLHttpRequest();
+function loadBackupCache()
+{
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", backup_cache_url, false);
+  xhr.onreadystatechange = function()
+  {
+    if (xhr.readyState == 4) {
+      backup_cache = JSON.parse(xhr.responseText);
+    }
+  };
 
-xhr.onreadystatechange = function() {
-  if (xhr.readyState == 4) {
-    backup_cache_json = JSON.parse(xhr.responseText);
+  try {
+    xhr.send();
+  } catch(e) {
+    console.log('Couldn\'t load backup_cache');
   }
-};
-
-xhr.open("GET", backup_cache_url, false);
-
-try {
-  xhr.send();
-} catch(e) {
-  console.log('Couldn\'t load backup_cache');
 }
 
 /* Methoden
  * ======== */
+
+function loadOnlineCache()
+{
+  online_cache = JSON.parse(localStorage.cache);
+}
+
+
+/**
+ * Synchronsieren des lokalen cache mit der letzten Version
+ * auf pastebin oder eines Fallback-Mirrors, wenn neuer
+ */
+function updateCacheFromWeb(mirror) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", cacheMirrors[mirror], true);
+  xhr.onerror = function() {
+    if(cacheMirrors[mirror + 1]) {
+        updateCache(mirror + 1);
+      }
+  }
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == this.DONE) {
+      var json = JSON.parse(xhr.responseText);
+      if(localStorage.cache == undefined) {
+        localStorage.cache = xhr.responseText;
+        loadOnlineCache();
+      }
+      else {
+        var cache_old = JSON.parse(localStorage.cache);
+        if (cache_old['update'] && Date.parse(json['update']) > Date.parse(cache_old['update'])) {
+          localStorage.cache = json;
+        }
+        loadOnlineCache();
+      }
+    }
+  }
+  xhr.send();
+}
+
+
 function storeData(id, data) {
-  storage.local.set({id : data}, function() {
-    console.log('data with id: ' + id + ' saved');
-  });
+  localStorage[id] = data;
 }
 
 function getData(id) {
-  console.log('getData');
   // first look into backup_cache
-  if (id in backup_cache_json) {
-    return backup_cache_json[id];
+  if (id in backup_cache) {
+    return backup_cache[id];
+  }
+
+  // try to load data from online_cache
+  if (online_cache[id] == undefined) {
+    return 0; // TODO try to update cache here?
+  } else {
+    var a = online_cache[id];
+    return online_cache[id];
   }
 }
 
+loadBackupCache();
+updateCacheFromWeb(0);
 
 /* Message-Request Listener
  * ======================== */

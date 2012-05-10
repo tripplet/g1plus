@@ -11,3 +11,6 @@ ChangeLog
 ### V0.3.5
 * Anzeigen der Länge des Videos
 * Anzeigen des Vorschaubildes von Videos, selbst bei Aktiviertem [Flashblock](https://chrome.google.com/webstore/detail/gofhjkjmkpinhpoiabjplobcaignabnl) 
+
+### V0.3.6
+* Online update der gesperrten Videodatenbank

@@ -16,6 +16,8 @@
     "http://*.gameone.de/*",
     "http://videos.mtvnn.com/*",
     "http://de.esperanto.mtvi.com/*",
+    "http://pastebin.com/raw.php?i=tVLCAjZc",
+    "http://g1plus.x10.mx/cache.json"
   ],
   "background": {
     "scripts": ["scripts/background_page.js"]
