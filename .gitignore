@@ -43,3 +43,8 @@
 ehthumbs.db
 Icon?
 Thumbs.db
+
+# Project specific
+# ================
+test_pages
+build
