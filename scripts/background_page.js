@@ -5,7 +5,6 @@ var cacheMirrors = ['http://pastebin.com/raw.php?i=tVLCAjZc',
                     'http://g1plus.x10.mx/cache.json'];
 
 var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
-var backup_cache = false;
 var online_cache = false;
 
 /**
@@ -21,7 +20,9 @@ function loadBackupCache()
   xhr.onreadystatechange = function()
   {
     if (xhr.readyState == 4) {
-      backup_cache = JSON.parse(xhr.responseText);
+      if(localStorage.cache == undefined) {
+        localStorage.cache = xhr.responseText;
+      }
     }
   };
 
@@ -31,6 +32,7 @@ function loadBackupCache()
     console.log('Couldn\'t load backup_cache');
   }
 }
+
 
 /* Methoden
  * ======== */
@@ -55,17 +57,21 @@ function updateCacheFromWeb(mirror) {
   }
   xhr.onreadystatechange = function() {
     if (xhr.readyState == this.DONE) {
-      var json = JSON.parse(xhr.responseText);
-      if(localStorage.cache == undefined) {
-        localStorage.cache = xhr.responseText;
-        loadOnlineCache();
-      }
-      else {
-        var cache_old = JSON.parse(localStorage.cache);
-        if (cache_old['update'] && Date.parse(json['update']) > Date.parse(cache_old['update'])) {
-          localStorage.cache = json;
+      try {
+        var json = JSON.parse(xhr.responseText);
+        if(localStorage.cache == undefined) {
+          localStorage.cache = xhr.responseText;
+          loadOnlineCache();
         }
-        loadOnlineCache();
+        else {
+          var cache_old = JSON.parse(localStorage.cache);
+          if (cache_old['update'] && Date.parse(json['update']) > Date.parse(cache_old['update'])) {
+            localStorage.cache = xhr.responseText;
+          }
+          loadOnlineCache();
+        }
+      } catch(e) {
+        console.log('Couldn\'t update online_cache');
       }
     }
   }
@@ -78,11 +84,6 @@ function storeData(id, data) {
 }
 
 function getData(id) {
-  // first look into backup_cache
-  if (id in backup_cache) {
-    return backup_cache[id];
-  }
-
   // try to load data from online_cache
   if (online_cache[id] == undefined) {
     return 0; // TODO try to update cache here?
