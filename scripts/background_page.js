@@ -23,6 +23,15 @@ function loadBackupCache()
       if(localStorage.cache == undefined) {
         localStorage.cache = xhr.responseText;
       }
+      else {
+        // test if valid data present
+        try {
+          JSON.parse(localStorage.cache);
+        } catch (e) {
+          // no valid json in local cache override with backup
+          localStorage.cache = xhr.responseText;
+        }
+      }
     }
   };
 
