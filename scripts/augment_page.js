@@ -374,3 +374,12 @@ $('div.player_swf embed').each(getDownloads);
 $('img[src="/images/dummys/dummy_agerated.jpg"]').each(function(i) {
   $(this).replaceWith(createAgeCheck());
 });
+
+// load konami code (up up down down left right left right b a enter)
+konami = new Konami()
+konami.code = function()
+{
+  $('#header h1').css('background', 'url(http://upload.wikimedia.org/wikipedia/de/thumb/a/a6/GameOneLogo.png/220px-GameOneLogo.png) no-repeat 30px 30px');
+  $('#header h1').css('width', '250px');
+}
+konami.load()

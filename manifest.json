@@ -32,6 +32,7 @@
       ],
       "js": [
         "scripts/jquery.min.js",
+        "scripts/konami.pack.js",
         "scripts/augment_page.js"
       ],
       "run_at": "document_end"
