@@ -6,9 +6,9 @@
  * http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
  */
 $.fn.filterNode = function(name) {
-	return this.find('*').filter(function() {
-		return this.nodeName === name;
-	});
+  return this.find('*').filter(function() {
+    return this.nodeName === name;
+  });
 };
 
 /* Funktionen
@@ -124,16 +124,16 @@ function getDownloads()
  */
 function addOptions(select, min, max, callback)
 {
-	for(var i = min; i < max; ++i)
-	{
-		var option = document.createElement('option');
-		if(!callback) {
-			option.textContent = i;
-		} else {
-			option.textContent = callback(i);
-		}
-		select.appendChild(option);
-	}
+  for(var i = min; i < max; ++i)
+  {
+    var option = document.createElement('option');
+    if(!callback) {
+      option.textContent = i;
+    } else {
+      option.textContent = callback(i);
+    }
+    select.appendChild(option);
+  }
 }
 
 /**
@@ -145,52 +145,52 @@ function addOptions(select, min, max, callback)
  */
 function createAgeCheck()
 {
-	var agecheck = document.createElement('div');
-	agecheck.setAttribute('class', 'agecheck g1plus');
+  var agecheck = document.createElement('div');
+  agecheck.setAttribute('class', 'agecheck g1plus');
 
-	var info = document.createElement('p');
-	info.textContent = 'Um Ab-18-Inhalte sehen zu können musst du dein Alter bestätigen:';
-	agecheck.appendChild(info);
+  var info = document.createElement('p');
+  info.textContent = 'Um Ab-18-Inhalte sehen zu können musst du dein Alter bestätigen:';
+  agecheck.appendChild(info);
 
-	var day = document.createElement('select');
-	day.setAttribute('class', 'day');
-	addOptions(day, 1, 32);
-	agecheck.appendChild(day);
+  var day = document.createElement('select');
+  day.setAttribute('class', 'day');
+  addOptions(day, 1, 32);
+  agecheck.appendChild(day);
 
-	var month = document.createElement('select');
-	month.setAttribute('class', 'month');
-	addOptions(month, 1, 13);
-	agecheck.appendChild(month);
+  var month = document.createElement('select');
+  month.setAttribute('class', 'month');
+  addOptions(month, 1, 13);
+  agecheck.appendChild(month);
 
-	var year = document.createElement('select');
-	year.setAttribute('class', 'year');
-	addOptions(year, 0, 100, function(i) {
-		var today = new Date();
-		return today.getFullYear() - i;
-	});
-	agecheck.appendChild(year);
+  var year = document.createElement('select');
+  year.setAttribute('class', 'year');
+  addOptions(year, 0, 100, function(i) {
+    var today = new Date();
+    return today.getFullYear() - i;
+  });
+  agecheck.appendChild(year);
 
-	var ok = document.createElement('input');
-	ok.setAttribute('type', 'submit');
-	ok.setAttribute('value', 'Bestätigen');
-	$(ok).click(function() {
-		var year = parseInt($('select.year :selected', this.parentNode).text());
-		var month = parseInt($('select.month :selected', this.parentNode).text());
-		var day = parseInt($('select.day :selected', this.parentNode).text());
-		var age = new Date(year, month - 1, day);
-		var padded_age = new Date(age.getFullYear() + 18, age.getMonth(), age.getDate());
-		var today = new Date();
-		if((today.getTime() - padded_age.getTime()) >= 0) {
-			var commentable_id = document.getElementById('commentable_id').getAttribute('value');
-			$('div.agecheck').empty();
-			$('div.agecheck').addClass('loading');
-			request_cachedata(commentable_id);
-		}
-		return false;
-	});
-	agecheck.appendChild(ok);
+  var ok = document.createElement('input');
+  ok.setAttribute('type', 'submit');
+  ok.setAttribute('value', 'Bestätigen');
+  $(ok).click(function() {
+    var year = parseInt($('select.year :selected', this.parentNode).text());
+    var month = parseInt($('select.month :selected', this.parentNode).text());
+    var day = parseInt($('select.day :selected', this.parentNode).text());
+    var age = new Date(year, month - 1, day);
+    var padded_age = new Date(age.getFullYear() + 18, age.getMonth(), age.getDate());
+    var today = new Date();
+    if((today.getTime() - padded_age.getTime()) >= 0) {
+      var commentable_id = document.getElementById('commentable_id').getAttribute('value');
+      $('div.agecheck').empty();
+      $('div.agecheck').addClass('loading');
+      request_cachedata(commentable_id);
+    }
+    return false;
+  });
+  agecheck.appendChild(ok);
 
-	return agecheck;
+  return agecheck;
 }
 
 /* Events
@@ -202,30 +202,30 @@ function createAgeCheck()
  */
 function response_mrss(id, element)
 {
-	return function(data) {
+  return function(data) {
     var urls = new Array();
-  	$(data).filterNode('media:content').each(function() {
-  		var url = this.getAttribute('url');
+    $(data).filterNode('media:content').each(function() {
+      var url = this.getAttribute('url');
       var duration = Math.round(parseFloat(this.getAttribute('duration')) / 60);
       var callback = 'response_mediagen';
 
-  		if(url.indexOf('mediaGen.jhtml') != -1) {
-  			url = 'http://de.esperanto.mtvi.com/www/xml/flv/flvgen.jhtml?vid=' + url.split(':').pop();
-  			callback = 'response_flvgen';
-  		} else
-  			url = url.split('?')[0];
+      if(url.indexOf('mediaGen.jhtml') != -1) {
+        url = 'http://de.esperanto.mtvi.com/www/xml/flv/flvgen.jhtml?vid=' + url.split(':').pop();
+        callback = 'response_flvgen';
+      } else
+        url = url.split('?')[0];
 
-  		if(urls.indexOf(url) == -1) {
-  			urls.push(url);
+      if(urls.indexOf(url) == -1) {
+        urls.push(url);
         setDuration(duration, id);
 
-  			if (callback == 'response_mediagen') {
-  			  $.get(url, function(data) { response_mediagen(data, id) } );
-  			} else {
-  			  $.get(url, function(data) { response_flvgen(data, id) } );
-  			}
-  		}
-  	});
+        if (callback == 'response_mediagen') {
+          $.get(url, function(data) { response_mediagen(data, id) } );
+        } else {
+          $.get(url, function(data) { response_flvgen(data, id) } );
+        }
+      }
+    });
 
     var preview_image = $(data).filterNode('image').first();
 
@@ -243,37 +243,37 @@ function response_mrss(id, element)
 function response_mediagen(data, id)
 {
   var downloads = document.getElementById('downloads_' + id);
-	var videos = [];
+  var videos = [];
 
-	$('rendition', data).each(function() {
-		var v = {};
-		v.width = this.getAttribute('width');
-		v.height = this.getAttribute('height');
-		v.bitrate = this.getAttribute('bitrate');
-		v.mime = this.getAttribute('type').split('/').pop();
-		if(this.textContent.indexOf('http') == -1) {
-			v.url = this.textContent.trim().split('/riptide/').pop();
-			v.url = 'http://cdn.riptide-mtvn.com/' + v.url;
-		} else {
-			v.url = this.textContent;
-		}
-		videos.push(v);
-	});
+  $('rendition', data).each(function() {
+    var v = {};
+    v.width = this.getAttribute('width');
+    v.height = this.getAttribute('height');
+    v.bitrate = this.getAttribute('bitrate');
+    v.mime = this.getAttribute('type').split('/').pop();
+    if(this.textContent.indexOf('http') == -1) {
+      v.url = this.textContent.trim().split('/riptide/').pop();
+      v.url = 'http://cdn.riptide-mtvn.com/' + v.url;
+    } else {
+      v.url = this.textContent;
+    }
+    videos.push(v);
+  });
 
-	videos.sort(function(a, b) {
-		return b.width - a.width;
-	});
+  videos.sort(function(a, b) {
+    return b.width - a.width;
+  });
 
-	videos.sort(function(a, b) {
-		return b.bitrate - a.bitrate;
-	});
+  videos.sort(function(a, b) {
+    return b.bitrate - a.bitrate;
+  });
 
-	$(videos).each(function () {
-		var downlink = createDownloadLink(this.url,
-			this.mime + ' ' + this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
+  $(videos).each(function () {
+    var downlink = createDownloadLink(this.url,
+      this.mime + ' ' + this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
     if (downloads)
       downloads.appendChild(downlink);
-	});
+  });
 }
 
 
@@ -282,33 +282,33 @@ function response_mediagen(data, id)
  */
 function response_flvgen(data, id)
 {
-	var downloads = document.getElementById('downloads_' + id);
-	items = [];
+  var downloads = document.getElementById('downloads_' + id);
+  items = [];
 
-	$('src', data).each(function() {
-			items.push($(this).text());
-	});
+  $('src', data).each(function() {
+      items.push($(this).text());
+  });
 
-	$(items).each(function() {
-		var text = this.split('/').pop();
-		text = text.split('.').shift();
-		var downlink = createDownloadLink(this, text);
-		downloads.appendChild(downlink);
-	});
+  $(items).each(function() {
+    var text = this.split('/').pop();
+    text = text.split('.').shift();
+    var downlink = createDownloadLink(this, text);
+    downloads.appendChild(downlink);
+  });
 
-	var x = $('a', downloads);
+  var x = $('a', downloads);
 
-	x.sort(function(a, b) {
-		return b.textContent < a.textContent;
-	});
+  x.sort(function(a, b) {
+    return b.textContent < a.textContent;
+  });
 
-	$('a', downloads).each(function() {
-		downloads.removeChild(this);
-	});
+  $('a', downloads).each(function() {
+    downloads.removeChild(this);
+  });
 
-	$(x).each(function() {
-		downloads.appendChild(this);
-	});
+  $(x).each(function() {
+    downloads.appendChild(this);
+  });
 }
 
 /**
