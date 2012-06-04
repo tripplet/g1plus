@@ -36,6 +36,11 @@ function createDownloadContainer(id)
 }
 
 function setDuration(duration, id) {
+  // Falsche und nichtrelevante Videolängen gar nicht erst anzeigen
+  if (duration == 0) {
+    return;
+  }
+
   var video_length = document.createElement('h5');
   video_length.setAttribute('class', 'duration');
   video_length.textContent = '(' + duration + 'min)';
