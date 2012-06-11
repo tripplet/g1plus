@@ -235,7 +235,7 @@ function response_mrss(id, element)
     var preview_image = $(data).filterNode('image').first();
 
     if (preview_image.length != 0) {
-      element.parentNode.style.backgroundImage = 'url(' + preview_image.attr('url') + ')';
+      element.parentNode.style.backgroundImage = 'url(' + encodeURI(preview_image.attr('url')) + ')';
       element.parentNode.style.backgroundRepeat = 'no-repeat';
     }
   }
