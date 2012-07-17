@@ -237,6 +237,7 @@ function response_mrss(id, element)
     if (preview_image.length != 0) {
       element.parentNode.style.backgroundImage = 'url(' + encodeURI(preview_image.attr('url')) + ')';
       element.parentNode.style.backgroundRepeat = 'no-repeat';
+      element.parentNode.style.backgroundSize = '100%';
     }
   }
 }
