@@ -4,6 +4,8 @@
 var cacheMirrors = ['http://pastebin.com/raw.php?i=tVLCAjZc',
                     'http://g1plus.x10.mx/cache.json'];
 
+var informationPage = 'http://g1plus.x10.mx/blog/information/';
+
 var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
 var online_cache = false;
 
@@ -100,6 +102,34 @@ function getData(id) {
     var a = online_cache[id];
     return online_cache[id];
   }
+}
+
+function onInstall() {
+  // showInformation
+  chrome.tabs.create({url: informationPage});
+}
+
+function onUpdate() {
+  // show Changelog
+  // TODO
+}
+
+function getVersion() {
+  var details = chrome.app.getDetails();
+  return details.version;
+}
+
+// Check if the version has changed.
+var currVersion = getVersion();
+var prevVersion = localStorage['version']
+if (currVersion != prevVersion) {
+  // Check if we just installed this extension.
+  if (typeof prevVersion == 'undefined') {
+    onInstall();
+  } else {
+    onUpdate();
+  }
+  localStorage['version'] = currVersion;
 }
 
 loadBackupCache();
