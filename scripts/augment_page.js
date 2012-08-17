@@ -26,11 +26,20 @@ function createDownloadContainer(id)
     var downloads = document.createElement('div');
     downloads.setAttribute('id', id)
     downloads.setAttribute('class', 'downloads g1plus');
-    downloads.style.backgroundImage = 'url(' + chrome.extension.getURL('icons/icon_64.png') + ')';
 
     var heading = document.createElement('h4');
     heading.textContent = 'Downloads';
     downloads.appendChild(heading);
+    downloads.appendChild(document.createElement('br'));
+
+    $(heading).click(function() {
+      $(downloads).find('a').slideToggle();
+      if (downloads.style.backgroundImage == '') {
+        downloads.style.backgroundImage = 'url(' + chrome.extension.getURL('icons/icon_64.png') + ')';
+      } else {
+        downloads.style.backgroundImage = ''
+      }
+    });
 
     return downloads;
 }
@@ -73,6 +82,7 @@ function createDownloadLink(url, text)
 {
     var downlink = document.createElement('a');
     downlink.setAttribute('href', url);
+    downlink.style.display = 'none';
     downlink.textContent = text;
 
     return downlink;
