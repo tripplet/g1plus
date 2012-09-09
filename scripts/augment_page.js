@@ -28,7 +28,7 @@ function createDownloadContainer(id)
     downloads.setAttribute('class', 'downloads g1plus');
 
     var heading = document.createElement('h4');
-    heading.textContent = 'Downloads';
+    heading.textContent = '» Downloads';
     downloads.appendChild(heading);
     downloads.appendChild(document.createElement('br'));
 
