@@ -89,11 +89,11 @@ function createDownloadLink(url, text)
 }
 
 /**
- * Erstellt einen Player, der dem GameOne-Player entspricht.
+ * Erstellt einen Player, der dem alten GameOne-Player entspricht.
  *
  * @param src  Quelle des anzuzeigenden Videos.
  */
-function createPlayer(src)
+function createLegacyPlayer(src)
 {
     var player = document.createElement('embed');
     player.setAttribute('width', 566);
@@ -113,16 +113,55 @@ function createPlayer(src)
 }
 
 /**
+ * Erstellt einen Player, der dem GameOne-Player entspricht.
+ *
+ * @param src  Quelle des anzuzeigenden Videos.
+ */
+function createPlayer(src, parent)
+{
+    var swf = document.createElement('div');
+    parent.appendChild(swf);
+    var rand = Math.floor((Math.random()*1000000)+1);
+    var flashvars = {
+        mrss: src,
+        config: "http://www.gameone.de/gameone_de_DE.xml",
+        adSite: "gameone.de",
+        umaSite: "gameone.de",
+        autoPlay: "false",
+        url: "",
+        tile: "",
+        ord: rand,
+        image: ""
+    };
+    var params = {
+        wmode: "true",
+        enableJavascript: "true",
+        allowscriptaccess: "always",
+        swLiveConnect: "true",
+        allowfullscreen: "true"
+    };
+    var attributes = {
+      id:"embeddedPlayer",
+      name:"embeddedPlayer"
+    };
+    swfobject.embedSWF("http://www.gameone.de/flash/g2player_2.0.60.swf", swf, "566", "424", "9.0.28.0", "expressInstall.swf", flashvars, params, attributes);
+}
+
+/**
  * Holt die zugehörigen Downloads des Owner-Objects und fügt sie in einer
  * Download-Box an.
  */
 function getDownloads()
 {
-    var src = this.getAttribute('src');
+    try {
+        var src = $('#embeddedPlayer', this).get(0).getAttribute('flashvars').split('&').shift();
+    } catch(err) {
+        var src = $('#embeddedPlayer param[name="flashvars"]', this).val().split('&').shift();
+    }
     var id = src.split('-').pop();
-    this.parentNode.appendChild(createDownloadContainer('downloads_' + id));
+    this.appendChild(createDownloadContainer('downloads_' + id));
     node = this;
-    $.get('http://gameone.de/api/mrss/' + src, response_mrss(id, node) );
+    $.get('http://gameone.de/api/mrss/' + src, response_mrss(id, node));
 }
 
 /**
@@ -341,18 +380,17 @@ function replace_restricted_wrapper(page, index, element) {
         if(id.indexOf('gallery') > -1) {
             $(element).replaceWith(createWarning('Bei diesem altersbeschränkten Inhalt handelt es sich um eine Bilder-Galerie, Diese werden derzeit nicht von G1Plus erfasst. Dies kann sich in zukünftigen Versionen ändern, wenn gesteigertes Interesse besteht (<a href="https://github.com/g1plus/g1plus/issues/1">Issue #1</a>)'));
         } else {
-            var url = 'http://media.mtvnservices.com/mgid:gameone:video:mtvnn.com:video_meta-' + id;
+            var url = "http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:video_meta-" + id;
             if(id.indexOf('http') > -1) {
                 url = id;
             }
             var player_swf = document.createElement('div');
             player_swf.setAttribute('class', 'player_swf');
-            var player = createPlayer(url);
-            player_swf.appendChild(player);
+            var player = createPlayer(url, player_swf);
             $(element).after(player_swf);
             if(id.indexOf('http') == -1) {
-                player.getDownloads = getDownloads;
-                player.getDownloads();
+                player_swf.getDownloads = getDownloads;
+                player_swf.getDownloads(id);
             }
         }
       }
@@ -384,7 +422,7 @@ function request_cachedata(commentable_id)
  * ==== */
 
 // Downloads unter alle Videos einfügen
-$('div.player_swf embed').each(getDownloads);
+$('div.player_swf').each(getDownloads);
 
 // altersbeschränkten Inhalte verarbeiten
 $('img[src="/images/dummys/dummy_agerated.jpg"]').each(function(i) {

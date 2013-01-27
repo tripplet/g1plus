@@ -1,6 +1,6 @@
 {
   "name": "g1plus",
-  "version": "0.3.8.3",
+  "version": "0.4",
   "manifest_version": 2,
   "description": "Download-Links und Wiedergabe von Ab-18-Inhalten nach Altersverifikation für GameOne.de auch innerhalb der Sperrzeiten",
   "icons": {
@@ -33,7 +33,8 @@
       "js": [
         "scripts/jquery.min.js",
         "scripts/konami.pack.js",
-        "scripts/augment_page.js"
+        "scripts/augment_page.js",
+        "scripts/swfobject.js"
       ],
       "run_at": "document_end"
     }
