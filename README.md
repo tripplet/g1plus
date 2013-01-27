@@ -1,9 +1,7 @@
 Chrome-Addon-Fork
 =================
 
-Fork vom g1plus Addon für Chrome Download: https://github.com/tripplet/g1plus/downloads
-
-Achtung: Wurde die Version 0.3.3 installiert muss diese nach dem Update auf 0.3.4 manuell wieder gelöscht werden.
+g1plus Addon für Chrome Download: http://g1plus.x10.mx/
 
 Beschreibung
 ============
