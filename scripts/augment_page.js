@@ -143,6 +143,29 @@ function createPlayer(src, parent)
 }
 
 /**
+ * Erstellt den video-js Player
+ * @param src  Quelle des anzuzeigenden Videos.
+ */
+function createHTML5Player(src)
+{
+    var video = document.createElement('video');
+    var source = document.createElement('source');
+
+    video.setAttribute('width', 566);
+    video.setAttribute('height', 424);
+    video.setAttribute('preload', 'auto');
+    video.setAttribute('data-setup', '{}');
+    video.setAttribute('controls', '');
+
+    source.setAttribute('type', 'video/mp4');
+    source.setAttribute('src', src);
+
+    video.appendChild(source);
+
+    return video;
+}
+
+/**
  * Holt die zugehörigen Downloads des Owner-Objects und fügt sie in einer
  * Download-Box an.
  */
@@ -328,6 +351,8 @@ function response_mediagen(data, id)
     if (downloads)
       downloads.appendChild(downlink);
   });
+
+  downloads.parentNode.replaceChild(createHTML5Player(videos[0].url), downloads.parentNode.firstChild);
 }
 
 
