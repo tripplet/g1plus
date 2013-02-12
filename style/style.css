@@ -73,3 +73,9 @@
 .g1plus p {
   margin-bottom: 0;
 }
+
+.switchplayer {
+  cursor: pointer;
+  display: inline-block;
+  float: right;
+}

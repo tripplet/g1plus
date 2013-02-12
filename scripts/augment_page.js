@@ -143,10 +143,10 @@ function createPlayer(src, parent)
 }
 
 /**
- * Erstellt den video-js Player
+ * Erstellt den html5 Player
  * @param src  Quelle des anzuzeigenden Videos.
  */
-function createHTML5Player(src)
+function createHTML5Player(src, init_visible)
 {
     var video = document.createElement('video');
     var source = document.createElement('source');
@@ -163,6 +163,39 @@ function createHTML5Player(src)
     video.appendChild(source);
 
     return video;
+}
+
+/**
+ * Erzeugt einen HTML5-Player als Ersatz für den Flashplayer und erlaubt das zurückschalten
+ */
+function createSwitchablePlayer(video_url, download_container) {
+  var player_container = document.createElement('div')
+  var switch_button = document.createElement('h4');
+  var flash_player = download_container.parentNode.firstChild;
+  var html5_player = createHTML5Player(video_url, true);
+
+  switch_button.textContent = '» Flash';
+  switch_button.setAttribute('class', 'switchplayer');
+  $(download_container.parentNode).prepend(switch_button, document.createElement('br'));
+
+  // hide html5 player
+  flash_player.setAttribute('style', 'display: none');
+
+  download_container.parentNode.removeChild(flash_player);
+  player_container.appendChild(flash_player);
+  player_container.appendChild(html5_player);
+  download_container.parentNode.insertBefore(player_container, download_container);
+
+  $(switch_button).click(function() {
+    $(player_container).children().toggle();
+
+    if (this.textContent == '» Flash') {
+      this.textContent = '» HTML5';
+    }
+    else {
+      this.textContent = '» Flash';
+    }
+  });
 }
 
 /**
@@ -352,9 +385,8 @@ function response_mediagen(data, id)
       downloads.appendChild(downlink);
   });
 
-  downloads.parentNode.replaceChild(createHTML5Player(videos[0].url), downloads.parentNode.firstChild);
+  createSwitchablePlayer(videos[0].url, downloads);
 }
-
 
 /**
  * Behandeln von Inhalten, die von der flvgen-API geliefert werden (TV-Folgen 1 - 150).
