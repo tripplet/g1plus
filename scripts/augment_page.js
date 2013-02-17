@@ -21,7 +21,7 @@ $.fn.filterNode = function(name) {
  *
  * @return Der Container
  */
-function createDownloadContainer(id)
+function createDownloadContainer(id, src)
 {
     var downloads = document.createElement('div');
     downloads.setAttribute('id', id)
@@ -30,16 +30,12 @@ function createDownloadContainer(id)
     var heading = document.createElement('h4');
     heading.textContent = '» Downloads';
     downloads.appendChild(heading);
-    downloads.appendChild(document.createElement('br'));
 
-    $(heading).click(function() {
-      $(downloads).find('a').slideToggle();
-      if (downloads.style.backgroundImage == '') {
-        downloads.style.backgroundImage = 'url(' + chrome.extension.getURL('icons/icon_64.png') + ')';
-      } else {
-        downloads.style.backgroundImage = ''
-      }
-    });
+    var hidden_src = document.createElement('input');
+    hidden_src.setAttribute('type', 'hidden');
+    hidden_src.setAttribute('class', 'src g1plus');
+    hidden_src.setAttribute('value', src);
+    downloads.appendChild(hidden_src);
 
     return downloads;
 }
@@ -82,7 +78,6 @@ function createDownloadLink(url, text)
 {
     var downlink = document.createElement('a');
     downlink.setAttribute('href', url);
-    downlink.style.display = 'none';
     downlink.textContent = text;
 
     return downlink;
@@ -159,7 +154,7 @@ function getDownloads()
         var src = $('#embeddedPlayer param[name="flashvars"]', this).val().split('&').shift();
     }
     var id = src.split('-').pop();
-    this.appendChild(createDownloadContainer('downloads_' + id));
+    this.appendChild(createDownloadContainer('downloads_' + id, src));
     node = this;
     $.get('http://gameone.de/api/mrss/' + src, response_mrss(id, node));
 }
@@ -325,7 +320,7 @@ function response_mediagen(data, id)
 
   $(videos).each(function () {
     var downlink = createDownloadLink(this.url,
-      this.mime + ' ' + this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
+      this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
     if (downloads)
       downloads.appendChild(downlink);
   });
