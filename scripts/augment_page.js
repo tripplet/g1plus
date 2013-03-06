@@ -55,13 +55,8 @@ function setDuration(duration, id) {
 function createWarning(msg)
 {
     var warning = document.createElement('div');
-    warning.setAttribute('class', 'warn_text');
+    warning.setAttribute('class', 'warn_text g1plus');
     $(warning).html(msg);
-
-    var g1plus_icon = document.createElement('img');
-    g1plus_icon.setAttribute('class', 'g1plus_small_icon');
-    g1plus_icon.src = chrome.extension.getURL('icons/icon_64.png');
-    warning.appendChild(g1plus_icon);
 
     return warning;
 }
