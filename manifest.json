@@ -15,13 +15,11 @@
     "images/warn_icon.png"
   ],
   "permissions": [
-    "storage",
-    "unlimitedStorage",
+    "webRequest",
+    "webRequestBlocking",
     "*://*.gameone.de/*",
     "http://videos.mtvnn.com/*",
-    "http://de.esperanto.mtvi.com/*",
-    "http://pastebin.com/raw.php?i=tVLCAjZc",
-    "http://g1plus.x10.mx/cache.json"
+    "http://de.esperanto.mtvi.com/*"
   ],
   "background": {
     "scripts": ["scripts/background_page.js"]
