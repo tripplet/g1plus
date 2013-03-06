@@ -66,15 +66,8 @@
     text-shadow: 2px 2px 0px #000;
 }
 
-.switchplayer {
-  cursor: pointer;
-  display: inline-block;
-  float: right;
-}
-
 .g1plus h4 {
   font-weight: bold;
-  text-shadow: 2px 2px 0px #000;
 }
 
 .g1plus p {

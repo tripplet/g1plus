@@ -197,19 +197,21 @@ function createAgeCheck()
   var agecheck = document.createElement('div');
   agecheck.setAttribute('class', 'agecheck g1plus');
 
+  agecheck_box = document.createElement('div');
+
   var info = document.createElement('p');
   info.textContent = 'Um Ab-18-Inhalte sehen zu können musst du dein Alter bestätigen:';
-  agecheck.appendChild(info);
+  agecheck_box.appendChild(info);
 
   var day = document.createElement('select');
   day.setAttribute('class', 'day');
   addOptions(day, 1, 32);
-  agecheck.appendChild(day);
+  agecheck_box.appendChild(day);
 
   var month = document.createElement('select');
   month.setAttribute('class', 'month');
   addOptions(month, 1, 13);
-  agecheck.appendChild(month);
+  agecheck_box.appendChild(month);
 
   var year = document.createElement('select');
   year.setAttribute('class', 'year');
@@ -217,7 +219,7 @@ function createAgeCheck()
     var today = new Date();
     return today.getFullYear() - i;
   });
-  agecheck.appendChild(year);
+  agecheck_box.appendChild(year);
 
   var ok = document.createElement('input');
   ok.setAttribute('type', 'submit');
@@ -237,7 +239,9 @@ function createAgeCheck()
     }
     return false;
   });
-  agecheck.appendChild(ok);
+
+  agecheck_box.appendChild(ok);
+  agecheck.appendChild(agecheck_box);
 
   return agecheck;
 }
