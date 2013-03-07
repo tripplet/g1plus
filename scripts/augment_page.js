@@ -142,9 +142,9 @@ function createPlayer(src, ismuted, autoplay) {
       usehq: "true"
     };
 
-    if(src.startsWith('file=')) {
+    if(src.indexOf('file=') == 0) {
       flashvars.file = src.replace('file=', '');
-    } else if(src.startsWith('mrss=')) {
+    } else if(src.indexOf('mrss=') == 0) {
       flashvars.mrss = src.replace('mrss=', '');
     } else {
       flashvars.mrss = src;
