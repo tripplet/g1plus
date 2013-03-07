@@ -142,9 +142,9 @@ function createPlayer(src, ismuted, autoplay) {
       usehq: "true"
     };
 
-    if(src.startsWith('file=')) {
+    if(src.indexOf('file=') == 0) {
       flashvars.file = src.replace('file=', '');
-    } else if(src.startsWith('mrss=')) {
+    } else if(src.indexOf('mrss=') == 0) {
       flashvars.mrss = src.replace('mrss=', '');
     } else {
       flashvars.mrss = src;
@@ -411,7 +411,7 @@ function response_cache(response) {
         /* We can't parse the cache as XML since we can't ensure it's wellformed or
          * valid. To extract the agerated tags we need to make them visible for
          * jQuery by replacing them with proper html tags beforhand */
-        var part = response.text.replace('<part />', '<part/>').split('<part/>')[page - 1];
+        var part = response.cache.replace('<part />', '<part/>').split('<part/>')[page - 1];
         var properHtml = '<div>' + part.replace(/<agerated>/g, '<div class="agerated">').replace(/<\/agerated>/g, '</div>') + '</div>';
         var agerated = $('div', properHtml);
 
@@ -424,16 +424,13 @@ function response_cache(response) {
                 var src = items[j].getAttribute('src').split(':');
                 var protocol = src[0];
                 var id = src[1];
-                if(id in _fallback) {
-                    id = _fallback[id].replace('$GT', GAMETRAILERS_URL);
-                }
 
                 if(protocol == 'riptide' || protocol == 'video') {
                     var url = API_PREFIX + 'video_meta-' + id;
                     if(id.indexOf('http') > -1) {
                         url = 'file=' + id;
                     }
-                    var player_swf = createPlayer(url, false, false, _preferences.uselegacyplayer);
+                    var player_swf = createPlayer(url, false, false);
                     $(this).after(player_swf);
                     player_swf.getDownloads = getDownloads;
                     player_swf.getDownloads(id);
@@ -476,12 +473,12 @@ function request_cache(id) {
         var body = post['post']['body'];
         response_cache({status: xhr.status, cache:body});
       } catch(e) {
-        console.log('Could not receive api data');
-        response_cache({status: xhr.status, cache:null});
+        console.log('Could not receive api data: ' + e);
+        response_cache({status: 410, cache:null});
       }
     }
     else {
-      response_cache({status: 200, cache:null});
+      response_cache({status: 410, cache:null});
     }
   }
 
@@ -495,6 +492,7 @@ function request_cache(id) {
 
 /* Main
  * ==== */
+ _url = window.location.href;
 
 // Downloads unter alle Videos einfügen
 $('div.player_swf').each(getDownloads);
