@@ -1,3 +1,12 @@
+/* Konstanten
+ * ========== */
+
+var API_URL = 'http://gameone.de/blog/'
+var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
+var PLAYER_SWF = 'http://www.gameone.de/flash/g2player_2.0.64.1.swf';
+var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
+
+
 /* Workarounds
  * ========== */
 
@@ -55,13 +64,8 @@ function setDuration(duration, id) {
 function createWarning(msg)
 {
     var warning = document.createElement('div');
-    warning.setAttribute('class', 'warn_text');
+    warning.setAttribute('class', 'warn_text g1plus');
     $(warning).html(msg);
-
-    var g1plus_icon = document.createElement('img');
-    g1plus_icon.setAttribute('class', 'g1plus_small_icon');
-    g1plus_icon.src = chrome.extension.getURL('icons/icon_64.png');
-    warning.appendChild(g1plus_icon);
 
     return warning;
 }
@@ -84,62 +88,72 @@ function createDownloadLink(url, text)
 }
 
 /**
- * Erstellt einen Player, der dem alten GameOne-Player entspricht.
+ * Erstellt einen eingebetteten YouTube-Player.
  *
- * @param src  Quelle des anzuzeigenden Videos.
+ * @param id   ID des Youtube-Videos
  */
-function createLegacyPlayer(src)
-{
-    var player = document.createElement('embed');
-    player.setAttribute('width', 566);
-    player.setAttribute('height', 424);
-    player.setAttribute('flashvars', 'configParams');
-    player.setAttribute('menu', 'false');
-    player.setAttribute('swliveconnect', 'true');
-    player.setAttribute('allowscriptaccess', 'always');
-    player.setAttribute('enablejavascript', 'true');
-    player.setAttribute('allowfullscreen', 'true');
-    player.setAttribute('quality', 'high');
-    player.setAttribute('name', 'embeddedPlayer');
-    player.setAttribute('id', 'embeddedPlayer');
-    player.setAttribute('src', src);
-    player.setAttribute('type', 'application/x-shockwave-flash');
-    return player;
+function createYoutubePlayer(id) {
+    var parent, swf;
+
+    parent = document.createElement('div');
+    swf = document.createElement('p');
+    parent.appendChild(swf);
+    swfobject.embedSWF("https://youtube.com/v/" + id + "?enablejsapi=1&version=3&border=0", swf, "566", "290", "8", null, null);
+
+    return parent;
 }
+
 
 /**
  * Erstellt einen Player, der dem GameOne-Player entspricht.
  *
- * @param src  Quelle des anzuzeigenden Videos.
+ * @param src    Quelle des anzuzeigenden Videos.
  */
-function createPlayer(src, parent)
-{
-    var swf = document.createElement('div');
+function createPlayer(src, ismuted, autoplay) {
+    var parent, swf, rand, attributes, params;
+
+    parent = document.createElement('div');
+    parent.setAttribute('class', 'player_swf');
+    swf = document.createElement('p');
     parent.appendChild(swf);
-    var rand = Math.floor((Math.random()*1000000)+1);
-    var flashvars = {
-        mrss: src,
-        config: "http://www.gameone.de/gameone_de_DE.xml",
-        adSite: "gameone.de",
-        umaSite: "gameone.de",
-        autoPlay: "false",
-        url: "",
-        tile: "",
-        ord: rand,
-        image: ""
-    };
-    var params = {
-        wmode: "true",
-        enableJavascript: "true",
-        allowscriptaccess: "always",
-        swLiveConnect: "true",
-        allowfullscreen: "true"
-    };
-    var attributes = {
+    rand = Math.floor((Math.random()*1000000)+1);
+    attributes = {
       id:"embeddedPlayer",
       name:"embeddedPlayer"
     };
-    swfobject.embedSWF("http://www.gameone.de/flash/g2player_2.0.60.swf", swf, "566", "424", "9.0.28.0", "expressInstall.swf", flashvars, params, attributes);
+    params = {
+      wmode: "true",
+      enableJavascript: "true",
+      allowscriptaccess: "always",
+      swLiveConnect: "true",
+      allowfullscreen: "true"
+    };
+
+    var flashvars = {
+      config: "http://www.gameone.de/gameone_de_DE.xml",
+      adSite: "gameone.de",
+      umaSite: "gameone.de",
+      url: _url,
+      tile: "",
+      ord: rand,
+      image: "",
+      ismuted: ismuted,
+      autoPlay: autoplay,
+      usehq: "true"
+    };
+
+    if(src.startsWith('file=')) {
+      flashvars.file = src.replace('file=', '');
+    } else if(src.startsWith('mrss=')) {
+      flashvars.mrss = src.replace('mrss=', '');
+    } else {
+      flashvars.mrss = src;
+    }
+    swfobject.embedSWF(PLAYER_SWF,
+                       swf, "566", "424", "9.0.28.0",
+                       null, flashvars, params, attributes);
+
+    return parent;
 }
 
 /**
@@ -205,14 +219,23 @@ function createSwitchablePlayer(video_url, download_container) {
 function getDownloads()
 {
     try {
-        var src = $('#embeddedPlayer', this).get(0).getAttribute('flashvars').split('&').shift();
-    } catch(err) {
-        var src = $('#embeddedPlayer param[name="flashvars"]', this).val().split('&').shift();
+        src = $('#embeddedPlayer', this).get(0).getAttribute('flashvars').match(/(file=|mrss=)[^&]*/)[0];
+    } catch (err) {
+        src = $('#embeddedPlayer param[name="flashvars"]', this).val().match(/(file=|mrss=)[^&]*/)[0];
     }
-    var id = src.split('-').pop();
-    this.appendChild(createDownloadContainer('downloads_' + id, src));
-    node = this;
-    $.get('http://gameone.de/api/mrss/' + src, response_mrss(id, node));
+
+
+    if(src) {
+        id = src.split(':').pop();
+        download_container = createDownloadContainer('downloads_' + id, src);
+        this.appendChild(download_container);
+        if(src.indexOf('file=') == 0) {
+            var filename = src.split('/').pop();
+            download_container.appendChild(createDownloadLink(src.replace('file=', ''), filename));
+        } else {
+            request(API_PREFIX + id, response_mrss, id);
+        }
+    }
 }
 
 /**
@@ -289,9 +312,7 @@ function createAgeCheck()
     var today = new Date();
     if((today.getTime() - padded_age.getTime()) >= 0) {
       var commentable_id = document.getElementById('commentable_id').getAttribute('value');
-      $('div.agecheck').empty();
-      $('div.agecheck').addClass('loading');
-      request_cachedata(commentable_id);
+      request_cache(commentable_id);
     }
     return false;
   });
@@ -302,176 +323,174 @@ function createAgeCheck()
   return agecheck;
 }
 
-/* Events
+/* Response
  * ==== */
 
 /**
- * Behandeln der Rückgabe der mrss-API. Inhalte die von der flvgen-API geliefert
- * werden, werden gesondert behandelt. Doppelte Urls werden gefiltert.
+ * Behandeln der Rückgabe der mrss-API. Doppelte Urls werden gefiltert.
  */
-function response_mrss(id, element)
-{
-  return function(data) {
-    var urls = new Array();
-    $(data).filterNode('media:content').each(function() {
-      var url = this.getAttribute('url');
-      var duration = Math.round(parseFloat(this.getAttribute('duration')) / 60);
-      var callback = 'response_mediagen';
+function response_mrss(response) {
+    if(response.status == 200) {
+        var urls = new Array();
+        $('media\\:content', response.text).each(function () {
+            var url = this.getAttribute('url').split('?')[0];
+            var duration = Math.round(parseFloat(this.getAttribute('duration')) / 60);
 
-      if(url.indexOf('mediaGen.jhtml') != -1) {
-        url = 'http://de.esperanto.mtvi.com/www/xml/flv/flvgen.jhtml?vid=' + url.split(':').pop();
-        callback = 'response_flvgen';
-      } else
-        url = url.split('?')[0];
-
-      if(urls.indexOf(url) == -1) {
-        urls.push(url);
-        setDuration(duration, id);
-
-        if (callback == 'response_mediagen') {
-          $.get(url, function(data) { response_mediagen(data, id) } );
-        } else {
-          $.get(url, function(data) { response_flvgen(data, id) } );
-        }
-      }
-    });
-
-    var preview_image = $(data).filterNode('image').first();
-
-    if (preview_image.length != 0) {
-      element.parentNode.style.backgroundImage = 'url(' + encodeURI(preview_image.attr('url')) + ')';
-      element.parentNode.style.backgroundRepeat = 'no-repeat';
-      element.parentNode.style.backgroundSize = '100%';
-    }
-  }
-}
-
-/**
- * Behandeln von Inhalten, die über die mediagen-API geliefert werden (reguläre
- * Viedos sowie Gametrailers-Videos).
- */
-function response_mediagen(data, id)
-{
-  var downloads = document.getElementById('downloads_' + id);
-  var videos = [];
-
-  $('rendition', data).each(function() {
-    var v = {};
-    v.width = this.getAttribute('width');
-    v.height = this.getAttribute('height');
-    v.bitrate = this.getAttribute('bitrate');
-    v.mime = this.getAttribute('type').split('/').pop();
-    if(this.textContent.indexOf('http') == -1) {
-      v.url = this.textContent.trim().split('/riptide/').pop();
-      v.url = 'http://cdn.riptide-mtvn.com/' + v.url;
-    } else {
-      v.url = this.textContent;
-    }
-    videos.push(v);
-  });
-
-  videos.sort(function(a, b) {
-    return b.width - a.width;
-  });
-
-  videos.sort(function(a, b) {
-    return b.bitrate - a.bitrate;
-  });
-
-  $(videos).each(function () {
-    var downlink = createDownloadLink(this.url,
-      this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
-    if (downloads)
-      downloads.appendChild(downlink);
-  });
-
-  createSwitchablePlayer(videos[0].url, downloads);
-}
-
-/**
- * Behandeln von Inhalten, die von der flvgen-API geliefert werden (TV-Folgen 1 - 150).
- */
-function response_flvgen(data, id)
-{
-  var downloads = document.getElementById('downloads_' + id);
-  items = [];
-
-  $('src', data).each(function() {
-      items.push($(this).text());
-  });
-
-  $(items).each(function() {
-    var text = this.split('/').pop();
-    text = text.split('.').shift();
-    var downlink = createDownloadLink(this, text);
-    downloads.appendChild(downlink);
-  });
-
-  var x = $('a', downloads);
-
-  x.sort(function(a, b) {
-    return b.textContent < a.textContent;
-  });
-
-  $('a', downloads).each(function() {
-    downloads.removeChild(this);
-  });
-
-  $(x).each(function() {
-    downloads.appendChild(this);
-  });
-}
-
-/**
- * Wrapper function um this variable aus dem jeweiligen context and die jeweilige Funktion zu übergeben
- * http://stackoverflow.com/questions/939032/jquery-pass-more-parameters-into-callback#answer-939185
- */
-function replace_restricted_wrapper(page, index, element) {
-  return function(response) {
-    if(response.data && response.data[page][String(index + 1)]) {
-      var ids = response.data[page][String(index + 1)];
-      for(j in ids) {
-        console.log('data:' + ids[j]);
-        var id = ids[j];
-        if(id.indexOf('gallery') > -1) {
-            $(element).replaceWith(createWarning('Bei diesem altersbeschränkten Inhalt handelt es sich um eine Bilder-Galerie, Diese werden derzeit nicht von G1Plus erfasst. Dies kann sich in zukünftigen Versionen ändern, wenn gesteigertes Interesse besteht (<a href="https://github.com/g1plus/g1plus/issues/1">Issue #1</a>)'));
-        } else {
-            var url = "http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:video_meta-" + id;
-            if(id.indexOf('http') > -1) {
-                url = id;
+            if(urls.indexOf(url) == -1) {
+                if(duration > 0) {
+                    setDuration(duration, response.id);
+                }
+                urls.push(url);
+                request(url, response_mediagen, response.id);
             }
-            var player_swf = document.createElement('div');
-            player_swf.setAttribute('class', 'player_swf');
-            var player = createPlayer(url, player_swf);
-            $(element).after(player_swf);
-            if(id.indexOf('http') == -1) {
-                player_swf.getDownloads = getDownloads;
-                player_swf.getDownloads(id);
-            }
-        }
-      }
-      $(element).remove();
+        });
     } else {
-      $(element).replaceWith(createWarning('Für diesen altersbeschränkten Inhalt liegt keine Referenz im Cache vor.'));
+        var downloads = document.getElementById('downloads_' + response.id);
+        $(downloads).replaceWith(createWarning('Es ist ein Fehler aufgetreten. Seite aktualisieren oder es später erneut versuchen. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
+    }
+}
+
+/**
+ * Behandeln von Inhalten, die über die mediagen-API geliefert werden
+ */
+function response_mediagen(response) {
+    var downloads = document.getElementById('downloads_' + response.id);
+
+    if(response.status == 200) {
+        var videos = [];
+
+        $('rendition', response.text).each(function () {
+            var v = {};
+            v.width = this.getAttribute('width');
+            v.height = this.getAttribute('height');
+            v.bitrate = this.getAttribute('bitrate');
+            v.mime = this.getAttribute('type').split('/').pop();
+            if(this.textContent.indexOf('http') == -1) {
+                v.url = this.textContent.trim().split('/riptide/').pop();
+                v.url = 'http://cdn.riptide-mtvn.com/' + v.url;
+            } else {
+                v.url = this.textContent;
+            }
+            videos.push(v);
+        });
+
+        videos.sort(function(a, b) {
+            return b.width - a.width;
+        });
+
+        videos.sort(function(a, b) {
+            return b.bitrate - a.bitrate;
+        });
+
+        $(videos).each(function () {
+            var downlink = createDownloadLink(this.url,
+                this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
+            downloads.appendChild(downlink);
+        });
+    } else {
+        $(downloads).replaceWith(createWarning('Es ist ein Fehler aufgetreten. Seite aktualisieren oder es später erneut versuchen. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
+    }
+
+    createSwitchablePlayer(videos[0].url, downloads);
+}
+
+
+/**
+ * Behandeln des Cache-Response.
+ * Im Cache enthaltene 18er-Inhalte werden durch das Video ersetzt und mit
+ * Downloadlinks versehen.
+ */
+function response_cache(response) {
+    if(response.status == 200) {
+        var page = 1;
+        var href = _url.split('?').pop().split('/');
+        if(href[href.length - 2] == 'part') {
+            page = parseInt(href[href.length - 1]);
+        }
+
+        /* We can't parse the cache as XML since we can't ensure it's wellformed or
+         * valid. To extract the agerated tags we need to make them visible for
+         * jQuery by replacing them with proper html tags beforhand */
+        var part = response.text.replace('<part />', '<part/>').split('<part/>')[page - 1];
+        var properHtml = '<div>' + part.replace(/<agerated>/g, '<div class="agerated">').replace(/<\/agerated>/g, '</div>') + '</div>';
+        var agerated = $('div', properHtml);
+
+        $('div.g1plus.agecheck').each(function(i){
+            $(this).empty();
+            $(this).addClass('loading');
+
+            var items = $('video', agerated[i]);
+            for(var j = 0; j < items.length; ++j) {
+                var src = items[j].getAttribute('src').split(':');
+                var protocol = src[0];
+                var id = src[1];
+                if(id in _fallback) {
+                    id = _fallback[id].replace('$GT', GAMETRAILERS_URL);
+                }
+
+                if(protocol == 'riptide' || protocol == 'video') {
+                    var url = API_PREFIX + 'video_meta-' + id;
+                    if(id.indexOf('http') > -1) {
+                        url = 'file=' + id;
+                    }
+                    var player_swf = createPlayer(url, false, false, _preferences.uselegacyplayer);
+                    $(this).after(player_swf);
+                    player_swf.getDownloads = getDownloads;
+                    player_swf.getDownloads(id);
+                } else if(protocol == 'youtube') {
+                    var youtube_swf = createYoutubePlayer(id.split('=')[1]);
+                    $(this).after(youtube_swf);
+                } else if(protocol == 'gallery') {
+                    $(this).replaceWith(createWarning('Bei diesem altersbeschränkten Inhalt handelt es sich um eine Bilder-Galerie, Diese werden derzeit nicht von G1Plus erfasst. Dies kann sich in zukünftigen Versionen ändern, wenn gesteigertes Interesse besteht (<a href="https://github.com/g1plus/g1plus/issues/1">Issue #1</a>)'));
+                } else {
+                    $(this).replaceWith(createWarning('G1Plus konnte für diesen Inhalt keine Referenz finden. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
+                }
+            }
+            $(this).remove();
+        });
+    } else {
+        $(this).after(createWarning('Problem beim Abfragen des Caches.'));
+    }
+}
+
+/* Browser specific functions
+ * ========================== */
+// TODO: In jeweils eigene Datei (ff.js/chrome.js) auslagern
+
+function request(url, callback, id) {
+  $.get(url).done(
+    function(data, status, jqXHR) {
+      callback({status: 200, id: id, text: jqXHR.responseText});
+    }
+  );
+}
+
+function request_cache(id) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", API_URL + id + '.json', false);
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == this.DONE && xhr.status == 200) {
+      try {
+        var post = JSON.parse(xhr.responseText);
+        var body = post['post']['body'];
+        response_cache({status: xhr.status, cache:body});
+      } catch(e) {
+        console.log('Could not receive api data');
+        response_cache({status: xhr.status, cache:null});
+      }
+    }
+    else {
+      response_cache({status: 200, cache:null});
     }
   }
-}
 
-function request_cachedata(commentable_id)
-{
-  var page = '1';
-  var href = window.location.href.split('?').pop().split('/');
-  if(href[href.length - 2] == 'part') {
-      page = href[href.length - 1];
+  try {
+    xhr.send();
+  } catch(e) {
+    console.log('Could not perfrom api request');
   }
-
-  // alle gesperreten Inhalte verarbeiten
-  $('div.agecheck').each(function(index) {
-    // Anfrage an backgroundPage für id
-    chrome.extension.sendRequest({func: "getData", id: commentable_id}, replace_restricted_wrapper(page, index, this));
-  });
 }
-
 
 
 /* Main
@@ -492,4 +511,4 @@ konami.code = function()
   $('#header h1').css('background', 'url(http://upload.wikimedia.org/wikipedia/de/thumb/a/a6/GameOneLogo.png/220px-GameOneLogo.png) no-repeat 30px 30px');
   $('#header h1').css('width', '250px');
 }
-konami.load()
+konami.load();
