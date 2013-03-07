@@ -104,6 +104,12 @@ function createYoutubePlayer(id) {
 }
 
 
+function getPlayerSWF() {
+  chrome.storage.local.get('player_swf', function(items) {
+    PLAYER_SWF = items.player_swf;
+  });
+}
+
 /**
  * Erstellt einen Player, der dem GameOne-Player entspricht.
  *
@@ -434,6 +440,8 @@ function request_cache(id) {
 /* Main
  * ==== */
  _url = window.location.href;
+
+ getPlayerSWF();
 
 // Downloads unter alle Videos einfügen
 $('div.player_swf').each(getDownloads);

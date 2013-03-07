@@ -32,6 +32,21 @@ function loadBackupCache()
   }
 }
 
+function updatePlayerVersion() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", 'http://www.gameone.de/tv/1', false);
+  xhr.onreadystatechange = function()
+  {
+    if (xhr.readyState == 4) {
+      // test if valid data present
+      var latest_player = xhr.responseText.match(/http:\/\/www.gameone.de\/flash\/g2player_[0-9\.]*swf/g);
+      chrome.storage.local.set({'player_swf': latest_player[0]});
+    }
+  };
+
+  xhr.send();
+}
+
 function getVersion() {
   var details = chrome.app.getDetails();
   return details.version;
@@ -67,6 +82,7 @@ if (currVersion != prevVersion) {
   localStorage['version'] = currVersion;
 }
 
+updatePlayerVersion();
 loadBackupCache();
 
 // Modify headers for all json-api requests

@@ -15,6 +15,7 @@
     "images/warn_icon.png"
   ],
   "permissions": [
+    "storage",
     "webRequest",
     "webRequestBlocking",
     "*://*.gameone.de/*",
