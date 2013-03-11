@@ -2,6 +2,7 @@
  * ===== */
 var API_URL = 'http://gameone.de/blog/'
 var informationPage = 'http://g1plus.x10.mx/blog/information/';
+var blogPage = 'http://g1plus.x10.mx/blog/';
 var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
 
 var backup_cache;
@@ -63,7 +64,18 @@ function onInstall() {
 
 function onUpdate() {
   // show Changelog
-  // TODO
+  if (currVersion == '0.4.1') {
+    var notification = webkitNotifications.createNotification(
+      'icons/icon_64.png', 'G1Plus aktualisiert (0.4.1)',
+      'Die Chrome-Erweiterung G1Plus wurde aktualisiert');
+
+    notification.onclick = function () {
+      window.open(blogPage);
+      notification.close();
+    }
+
+    notification.show();
+  }
 }
 
 /* Main
