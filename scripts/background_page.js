@@ -2,6 +2,7 @@
  * ===== */
 var API_URL = 'http://gameone.de/blog/'
 var informationPage = 'http://g1plus.x10.mx/blog/information/';
+var blogPage = 'http://g1plus.x10.mx/blog/';
 var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
 
 var backup_cache;
@@ -32,6 +33,21 @@ function loadBackupCache()
   }
 }
 
+function updatePlayerVersion() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", 'http://www.gameone.de/tv/1', false);
+  xhr.onreadystatechange = function()
+  {
+    if (xhr.readyState == 4) {
+      // test if valid data present
+      var latest_player = xhr.responseText.match(/http:\/\/www.gameone.de\/flash\/g2player_[0-9\.]*swf/g);
+      chrome.storage.local.set({'player_swf': latest_player[0]});
+    }
+  };
+
+  xhr.send();
+}
+
 function getVersion() {
   var details = chrome.app.getDetails();
   return details.version;
@@ -48,7 +64,18 @@ function onInstall() {
 
 function onUpdate() {
   // show Changelog
-  // TODO
+  if (currVersion == '0.4.1') {
+    var notification = webkitNotifications.createNotification(
+      'icons/icon_64.png', 'G1Plus aktualisiert (0.4.1)',
+      'Die Chrome-Erweiterung G1Plus wurde aktualisiert');
+
+    notification.onclick = function () {
+      window.open(blogPage);
+      notification.close();
+    }
+
+    notification.show();
+  }
 }
 
 /* Main
@@ -67,6 +94,7 @@ if (currVersion != prevVersion) {
   localStorage['version'] = currVersion;
 }
 
+updatePlayerVersion();
 loadBackupCache();
 
 // Modify headers for all json-api requests
