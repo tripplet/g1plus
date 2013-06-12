@@ -397,7 +397,7 @@ function response_mediagen(response) {
         $(downloads).replaceWith(createWarning('Es ist ein Fehler aufgetreten. Seite aktualisieren oder es später erneut versuchen. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
     }
 
-    createSwitchablePlayer(videos[0].url, downloads);
+    createSwitchablePlayer(videos[1].url, downloads);
 }
 
 
