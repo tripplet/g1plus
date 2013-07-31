@@ -6,6 +6,7 @@ var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
 var PLAYER_SWF = 'http://www.gameone.de/flash/g2player_2.0.64.1.swf';
 var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
+var default_quality_level = 1; // 2.beste Qualität (0=beste)
 
 /* Workarounds
  * ========== */
@@ -173,32 +174,45 @@ function createHTML5Player(src, init_visible)
 
     video.setAttribute('width', 566);
     video.setAttribute('height', 424);
-    video.setAttribute('preload', 'auto');
+    video.setAttribute('preload', 'none');
     video.setAttribute('data-setup', '{}');
     video.setAttribute('controls', '');
 
-    source.setAttribute('type', 'video/mp4');
-    source.setAttribute('src', src);
+    //source.setAttribute('type', 'video/mp4');
+    video.setAttribute('src', src);
 
-    video.appendChild(source);
+    //video.appendChild(source);
 
     return video;
 }
 
 /**
+ * Ändert die Source url des html5 Player
+ * @param src  HTML5 Player element
+ */
+function changeHTML5PlayerURL(player, video_src) {
+  player.setAttribute('src', video_src);
+}
+
+/**
  * Erzeugt einen HTML5-Player als Ersatz für den Flashplayer und erlaubt das zurückschalten
  */
-function createSwitchablePlayer(video_url, download_container) {
+function createSwitchablePlayer(video_urls, download_container) {
   var player_container = document.createElement('div')
   var switch_button = document.createElement('h4');
   var flash_player = download_container.parentNode.firstChild;
-  var html5_player = createHTML5Player(video_url, true);
+  var html5_player = createHTML5Player(video_urls[1].url, true);
+
+  switch_quality = document.createElement('div');
+  switch_quality.setAttribute('class', 'switchquality');
+  switch_quality.textContent = " # ";
+  download_container.appendChild(switch_quality);
 
   switch_button.textContent = '» Flash';
   switch_button.setAttribute('class', 'switchplayer');
   $(download_container.parentNode).prepend(switch_button, document.createElement('br'));
 
-  // hide html5 player
+  // hide flash player
   flash_player.setAttribute('style', 'display: none');
 
   download_container.parentNode.removeChild(flash_player);
@@ -206,15 +220,51 @@ function createSwitchablePlayer(video_url, download_container) {
   player_container.appendChild(html5_player);
   download_container.parentNode.insertBefore(player_container, download_container);
 
-  $(switch_button).click(function() {
+  $(switch_button).mousedown(function(){ return false; });
+  $(switch_button).click(function(event) {
+    event.preventDefault();
+
     $(player_container).children().toggle();
 
     if (this.textContent == '» Flash') {
       this.textContent = '» HTML5';
+      html5_player.pause();
+      changeHTML5PlayerURL(html5_player, '');
     }
     else {
       this.textContent = '» Flash';
+
+      quality = $(download_container).find('a.selected').attr('tag');
+
+      // switch src to new quality
+      changeHTML5PlayerURL(html5_player, video_urls[parseInt(quality)].url);
     }
+    return false;
+  });
+
+  // prevent text selecting
+  // http://stackoverflow.com/questions/880512/prevent-text-selection-after-double-click
+  $(switch_quality).mousedown(function(){ return false; });
+  $(switch_quality).click(function(event) {
+    event.preventDefault();
+    selected_quality = $(download_container).find('a.selected');
+    next_quality = selected_quality.next('a');
+
+    selected_quality.removeClass('selected');
+
+    if (next_quality.length > 0) {
+      next_quality.addClass('selected');
+    }
+    else {
+      selected_quality.siblings('a').eq(0).addClass('selected');
+    }
+
+    quality = $(download_container).find('a.selected').attr('tag');
+
+    // switch src to new quality
+    changeHTML5PlayerURL(html5_player, video_urls[parseInt(quality)].url);
+
+    return false;
   });
 }
 
@@ -388,16 +438,23 @@ function response_mediagen(response) {
             return b.bitrate - a.bitrate;
         });
 
-        $(videos).each(function () {
-            var downlink = createDownloadLink(this.url,
-                this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
+
+        $(videos).each(function (idx) {
+            var downlink = createDownloadLink(this.url, this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
             downloads.appendChild(downlink);
+            downlink.setAttribute('tag', idx);
+
+            if (idx == default_quality_level) {
+              downlink.setAttribute('class', 'selected');
+            }
         });
+
+
     } else {
         $(downloads).replaceWith(createWarning('Es ist ein Fehler aufgetreten. Seite aktualisieren oder es später erneut versuchen. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
     }
 
-    createSwitchablePlayer(videos[1].url, downloads);
+    createSwitchablePlayer(videos, downloads);
 }
 
 
