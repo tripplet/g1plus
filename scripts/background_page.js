@@ -3,35 +3,11 @@
 var API_URL = 'http://gameone.de/blog/'
 var informationPage = 'http://g1plus.x10.mx/blog/information/';
 var blogPage = 'http://g1plus.x10.mx/blog/';
-var backup_cache_url = chrome.extension.getURL("/data/backup_cache.json");
 
 var backup_cache;
 
 /* Methoden
  * ======== */
-
-function loadBackupCache()
-{
-  var xhr = new XMLHttpRequest();
-  xhr.open("GET", backup_cache_url, false);
-  xhr.onreadystatechange = function()
-  {
-    if (xhr.readyState == 4) {
-      // test if valid data present
-      try {
-          backup_cache = JSON.parse(xhr.responseText);
-      } catch (e) {
-        console.log('Error parsing backup cache');
-      }
-    }
-  };
-
-  try {
-    xhr.send();
-  } catch(e) {
-    console.log('Could not load backup_cache');
-  }
-}
 
 function updatePlayerVersion() {
   var xhr = new XMLHttpRequest();
@@ -40,7 +16,7 @@ function updatePlayerVersion() {
   {
     if (xhr.readyState == 4) {
       // test if valid data present
-      var latest_player = xhr.responseText.match(/http:\/\/www.gameone.de\/flash\/g2player_[0-9\.]*swf/g);
+      var latest_player = xhr.responseText.match('http[s]?:\/\/.*g2\/g2player_[0-9\._]+\.swf');
       chrome.storage.local.set({'player_swf': latest_player[0]});
     }
   };
@@ -52,7 +28,6 @@ function getVersion() {
   var details = chrome.app.getDetails();
   return details.version;
 }
-
 
 /* Event-Listener
  * ============== */
@@ -95,7 +70,6 @@ if (currVersion != prevVersion) {
 }
 
 updatePlayerVersion();
-loadBackupCache();
 
 // Modify headers for all json-api requests
 chrome.webRequest.onBeforeSendHeaders.addListener(
