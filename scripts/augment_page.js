@@ -227,7 +227,7 @@ function createSwitchablePlayer(video_urls, download_container) {
 
   flash_vars = parseFlashvars(flash_player.getAttribute('flashvars'));
 
-  var html5_player = createHTML5Player(video_urls[1].url, true, flash_vars['image']);
+  var html5_player = createHTML5Player(video_urls[QUALITY_LEVEL].url, true, flash_vars['image']);
 
   switch_quality = document.createElement('div');
   switch_quality.setAttribute('class', 'switchquality');
