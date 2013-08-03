@@ -6,7 +6,7 @@ var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
 var PLAYER_SWF = 'http://www.gameone.de/flash/g2player_2.0.64.1.swf';
 var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
-var default_quality_level = 1; // 2.beste Qualität (0=beste)
+var QUALITY_LEVEL = 1; // 2.beste Qualität (0=beste)
 
 /* Workarounds
  * ========== */
@@ -108,6 +108,13 @@ function createYoutubePlayer(id) {
 function getPlayerSWF() {
   chrome.storage.local.get('player_swf', function(items) {
     PLAYER_SWF = items.player_swf;
+  });
+}
+
+function getQualityLevel() {
+  chrome.storage.sync.get('quality_level', function(items) {
+    if (items['quality_level'] != null)
+      QUALITY_LEVEL = items['quality_level'];
   });
 }
 
@@ -263,6 +270,9 @@ function createSwitchablePlayer(video_urls, download_container) {
 
     // switch src to new quality
     changeHTML5PlayerURL(html5_player, video_urls[parseInt(quality)].url);
+
+    // save quality level
+    chrome.storage.sync.set({'quality_level': parseInt(quality)});
 
     return false;
   });
@@ -444,7 +454,7 @@ function response_mediagen(response) {
             downloads.appendChild(downlink);
             downlink.setAttribute('tag', idx);
 
-            if (idx == default_quality_level) {
+            if (idx == QUALITY_LEVEL) {
               downlink.setAttribute('class', 'selected');
             }
         });
@@ -558,6 +568,7 @@ function request_cache(id) {
  _url = window.location.href;
 
  getPlayerSWF();
+ getQualityLevel();
 
 // Downloads unter alle Videos einfügen
 $('div.player_swf').each(getDownloads);
