@@ -11,7 +11,10 @@
     "icons/icon_64.png",
     "images/bg_agecheck.png",
     "images/bg_stripe.png",
-    "images/warn_icon.png"
+    "images/warn_icon.png",
+    "video-js/font/vjs.ttf",
+    "video-js/font/vjs.woff",
+    "video-js/font/vjs.eot"
   ],
   "permissions": [
     "storage",
@@ -31,10 +34,12 @@
         "*://*.gameone.de/*"
       ],
       "css": [
-        "style/style.css"
+        "style/style.css",
+        "video-js/video-js.min.css"
       ],
       "js": [
         "scripts/jquery.min.js",
+        "video-js/video.js",
         "scripts/konami.pack.js",
         "scripts/augment_page.js",
         "scripts/swfobject.js"

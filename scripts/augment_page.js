@@ -177,19 +177,16 @@ function createPlayer(src, ismuted, autoplay) {
 function createHTML5Player(src, init_visible, poster_image)
 {
     var video = document.createElement('video');
-    var source = document.createElement('source');
 
     video.setAttribute('width', 566);
+    video.setAttribute('class', 'video-js vjs-default-skin');
     video.setAttribute('height', 424);
     video.setAttribute('preload', 'none');
-    video.setAttribute('data-setup', '{}');
     video.setAttribute('controls', '');
     video.setAttribute('poster', poster_image);
 
     //source.setAttribute('type', 'video/mp4');
     video.setAttribute('src', src);
-
-    //video.appendChild(source);
 
     return video;
 }
@@ -214,7 +211,7 @@ function parseFlashvars(parameter) {
  * @param src  HTML5 Player element
  */
 function changeHTML5PlayerURL(player, video_src) {
-  player.setAttribute('src', video_src);
+  player.src(video_src);
 }
 
 /**
@@ -228,6 +225,7 @@ function createSwitchablePlayer(video_urls, download_container) {
   flash_vars = parseFlashvars(flash_player.getAttribute('flashvars'));
 
   var html5_player = createHTML5Player(video_urls[QUALITY_LEVEL].url, true, flash_vars['image']);
+  html5_player.id = download_container.id + '_html5video';
 
   switch_quality = document.createElement('div');
   switch_quality.setAttribute('class', 'switchquality');
@@ -245,6 +243,10 @@ function createSwitchablePlayer(video_urls, download_container) {
   player_container.appendChild(flash_player);
   player_container.appendChild(html5_player);
   download_container.parentNode.insertBefore(player_container, download_container);
+
+  videojs(html5_player.id, {}, function() {
+    html5_player = this;
+  });
 
   $(switch_button).mousedown(function(){ return false; });
   $(switch_button).click(function(event) {
