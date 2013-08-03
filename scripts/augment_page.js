@@ -3,7 +3,7 @@
 
 var API_URL = 'http://gameone.de/blog/'
 var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
-var PLAYER_SWF = 'http://www.gameone.de/flash/g2player_2.0.64.1.swf';
+var PLAYER_SWF = 'https://playermtvnn-a.akamaihd.net/g2/g2player_2.1.4.swf';
 var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
 
