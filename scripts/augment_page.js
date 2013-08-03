@@ -174,7 +174,7 @@ function createPlayer(src, ismuted, autoplay) {
  * Erstellt den html5 Player
  * @param src  Quelle des anzuzeigenden Videos.
  */
-function createHTML5Player(src, init_visible)
+function createHTML5Player(src, init_visible, poster_image)
 {
     var video = document.createElement('video');
     var source = document.createElement('source');
@@ -184,6 +184,7 @@ function createHTML5Player(src, init_visible)
     video.setAttribute('preload', 'none');
     video.setAttribute('data-setup', '{}');
     video.setAttribute('controls', '');
+    video.setAttribute('poster', poster_image);
 
     //source.setAttribute('type', 'video/mp4');
     video.setAttribute('src', src);
@@ -191,6 +192,21 @@ function createHTML5Player(src, init_visible)
     //video.appendChild(source);
 
     return video;
+}
+
+function parseFlashvars(parameter) {
+    var paramArray = {};
+    var params = parameter.split('&');
+
+    for (i=0; i<params.length;i++) {
+        var paramPair = params[i];
+        var eqlIndex = paramPair.indexOf('=');
+        var paramName = paramPair.substring(0,eqlIndex);
+
+        paramArray[paramName] = unescape(paramPair.substring(eqlIndex+1));
+    }
+
+    return paramArray;
 }
 
 /**
@@ -208,7 +224,10 @@ function createSwitchablePlayer(video_urls, download_container) {
   var player_container = document.createElement('div')
   var switch_button = document.createElement('h4');
   var flash_player = download_container.parentNode.firstChild;
-  var html5_player = createHTML5Player(video_urls[1].url, true);
+
+  flash_vars = parseFlashvars(flash_player.getAttribute('flashvars'));
+
+  var html5_player = createHTML5Player(video_urls[1].url, true, flash_vars['image']);
 
   switch_quality = document.createElement('div');
   switch_quality.setAttribute('class', 'switchquality');
