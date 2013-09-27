@@ -6,8 +6,6 @@ var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
 var PLAYER_SWF = 'https://playermtvnn-a.akamaihd.net/g2/g2player_2.1.4.swf';
 var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
-var QUALITY_LEVEL = 1; // 2.beste Qualität (0=beste)
-
 /* Workarounds
  * ========== */
 
@@ -111,13 +109,6 @@ function getPlayerSWF() {
   });
 }
 
-function getQualityLevel() {
-  chrome.storage.sync.get('quality_level', function(items) {
-    if (items['quality_level'] != null)
-      QUALITY_LEVEL = items['quality_level'];
-  });
-}
-
 /**
  * Erstellt einen Player, der dem GameOne-Player entspricht.
  *
@@ -185,8 +176,15 @@ function createHTML5Player(src, init_visible, poster_image)
     video.setAttribute('controls', '');
     video.setAttribute('poster', poster_image);
 
-    //source.setAttribute('type', 'video/mp4');
-    video.setAttribute('src', src);
+    for (var idx = 0; idx < src.length; idx++) {
+      var source = document.createElement('source');
+
+      source.setAttribute('src', src[idx].url);
+      source.setAttribute('type', 'video/mp4');
+      source.setAttribute('data-res', src[idx].height + 'p');
+
+      video.appendChild(source);
+    };
 
     return video;
 }
@@ -224,13 +222,8 @@ function createSwitchablePlayer(video_urls, download_container) {
 
   flash_vars = parseFlashvars(flash_player.getAttribute('flashvars'));
 
-  var html5_player = createHTML5Player(video_urls[QUALITY_LEVEL].url, true, flash_vars['image']);
+  var html5_player = createHTML5Player(video_urls, true, flash_vars['image']);
   html5_player.id = download_container.id + '_html5video';
-
-  switch_quality = document.createElement('div');
-  switch_quality.setAttribute('class', 'switchquality');
-  switch_quality.textContent = " # ";
-  download_container.appendChild(switch_quality);
 
   switch_button.textContent = '» Flash';
   switch_button.setAttribute('class', 'switchplayer');
@@ -244,13 +237,19 @@ function createSwitchablePlayer(video_urls, download_container) {
   player_container.appendChild(html5_player);
   download_container.parentNode.insertBefore(player_container, download_container);
 
-  videojs(html5_player.id, {}, function() {
+  videojs(html5_player.id, {
+    plugins: {
+      resolutions: true
+    }
+  }, function() {
     html5_player = this;
     if (window.localStorage.volume) {
       this.volume(window.localStorage.volume);
     }
   });
 
+  // prevent text selecting
+  // http://stackoverflow.com/questions/880512/prevent-text-selection-after-double-click
   $(switch_button).mousedown(function(){ return false; });
   $(switch_button).click(function(event) {
     event.preventDefault();
@@ -259,45 +258,11 @@ function createSwitchablePlayer(video_urls, download_container) {
 
     if (this.textContent == '» Flash') {
       this.textContent = '» HTML5';
-      html5_player.pause();
-      changeHTML5PlayerURL(html5_player, '');
+      html5_player.src('');
     }
     else {
       this.textContent = '» Flash';
-
-      quality = $(download_container).find('a.selected').attr('tag');
-
-      // switch src to new quality
-      changeHTML5PlayerURL(html5_player, video_urls[parseInt(quality)].url);
     }
-    return false;
-  });
-
-  // prevent text selecting
-  // http://stackoverflow.com/questions/880512/prevent-text-selection-after-double-click
-  $(switch_quality).mousedown(function(){ return false; });
-  $(switch_quality).click(function(event) {
-    event.preventDefault();
-    selected_quality = $(download_container).find('a.selected');
-    next_quality = selected_quality.next('a');
-
-    selected_quality.removeClass('selected');
-
-    if (next_quality.length > 0) {
-      next_quality.addClass('selected');
-    }
-    else {
-      selected_quality.siblings('a').eq(0).addClass('selected');
-    }
-
-    quality = $(download_container).find('a.selected').attr('tag');
-
-    // switch src to new quality
-    changeHTML5PlayerURL(html5_player, video_urls[parseInt(quality)].url);
-
-    // save quality level
-    chrome.storage.sync.set({'quality_level': parseInt(quality)});
-
     return false;
   });
 }
@@ -477,10 +442,6 @@ function response_mediagen(response) {
             var downlink = createDownloadLink(this.url, this.width + 'x' + this.height + '@' + this.bitrate + 'kbps');
             downloads.appendChild(downlink);
             downlink.setAttribute('tag', idx);
-
-            if (idx == QUALITY_LEVEL) {
-              downlink.setAttribute('class', 'selected');
-            }
         });
 
 
@@ -592,7 +553,6 @@ function request_cache(id) {
  _url = window.location.href;
 
  getPlayerSWF();
- getQualityLevel();
 
 // Downloads unter alle Videos einfügen
 $('div.player_swf').each(getDownloads);
