@@ -246,6 +246,9 @@ function createSwitchablePlayer(video_urls, download_container) {
 
   videojs(html5_player.id, {}, function() {
     html5_player = this;
+    if (window.localStorage.volume) {
+      this.volume(window.localStorage.volume);
+    }
   });
 
   $(switch_button).mousedown(function(){ return false; });
