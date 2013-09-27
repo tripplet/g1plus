@@ -1,10 +1,14 @@
 /*!
 Video.js Default Styles (http://videojs.com)
-Version 4.1.0
+Version 4.2.1
 Create your own skin at http://designer.videojs.com
 */
 /* SKIN
 ================================================================================
+The main class name for all skin-specific styles. To make your own skin,
+replace all occurances of 'vjs-default-skin' with a new name. Then add your new
+skin name to your video tag instead of the default skin.
+e.g. <video class="video-js my-skin-name">
 */
 .vjs-default-skin {
   color: #cccccc;
@@ -87,7 +91,48 @@ The default control bar that is a container for most of the controls.
   background-color: #07141e;
   background-color: rgba(7, 20, 30, 0.7);
 }
-/* General styles for individual controls. */.vjs-default-skin .vjs-control {
+/* Show the control bar only once the video has started playing */
+.vjs-default-skin.vjs-has-started .vjs-control-bar {
+  display: block;
+  /* Visibility needed to make sure things hide in older browsers too. */
+
+  visibility: visible;
+  opacity: 1;
+  /* transition */
+  -webkit-transition: visibility 0.1s, opacity 0.1s;
+  -moz-transition: visibility 0.1s, opacity 0.1s;
+  -o-transition: visibility 0.1s, opacity 0.1s;
+  transition: visibility 0.1s, opacity 0.1s;
+}
+/* Hide the control bar when the video is playing and the user is inactive  */
+.vjs-default-skin.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+  display: block;
+  visibility: hidden;
+  opacity: 0;
+  /* transition */
+  -webkit-transition: visibility 1s, opacity 1s;
+  -moz-transition: visibility 1s, opacity 1s;
+  -o-transition: visibility 1s, opacity 1s;
+  transition: visibility 1s, opacity 1s;
+}
+.vjs-default-skin.vjs-controls-disabled .vjs-control-bar {
+  display: none;
+}
+.vjs-default-skin.vjs-using-native-controls .vjs-control-bar {
+  display: none;
+}
+/* IE8 is flakey with fonts, and you have to change the actual content to force
+fonts to show/hide properly.
+  - "\9" IE8 hack didn't work for this
+  - Found in XP IE8 from http://modern.ie. Does not show up in "IE8 mode" in IE9
+*/
+@media \0screen {
+  .vjs-default-skin.vjs-user-inactive.vjs-playing .vjs-control-bar :before {
+    content: "";
+  }
+}
+/* General styles for individual controls. */
+.vjs-default-skin .vjs-control {
   outline: none;
   position: relative;
   float: left;
@@ -350,6 +395,19 @@ easily in the skin designer. http://designer.videojs.com/
   -o-transition: all 0.4s;
   transition: all 0.4s;
 }
+/* Hide if controls are disabled */
+.vjs-default-skin.vjs-controls-disabled .vjs-big-play-button {
+  display: none;
+}
+/* Hide when video starts playing */
+.vjs-default-skin.vjs-has-started .vjs-big-play-button {
+  display: none;
+}
+/* Hide on mobile devices. Remove when we stop using native controls
+    by default on mobile  */
+.vjs-default-skin.vjs-using-native-controls .vjs-big-play-button {
+  display: none;
+}
 .vjs-default-skin:hover .vjs-big-play-button,
 .vjs-default-skin .vjs-big-play-button:focus {
   outline: 0;
@@ -406,25 +464,12 @@ easily in the skin designer. http://designer.videojs.com/
   content: "\e00a";
   font-family: VideoJS;
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1em;
   height: 1em;
   text-align: center;
   text-shadow: 0em 0em 0.1em #000;
-}
-/* Add a gradient to the spinner by overlaying another copy.
-   Text gradient plus a text shadow doesn't work
-   and `background-clip: text` only works in Webkit. */
-.vjs-default-skin .vjs-loading-spinner:after {
-  content: "\e00a";
-  /* Loading spinner icon */
-
-  font-family: VideoJS;
-  position: absolute;
-  width: 1em;
-  height: 1em;
-  text-align: center;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 @-moz-keyframes spin {
   0% {
@@ -644,6 +689,9 @@ body.vjs-full-window {
   width: 100% !important;
   height: 100% !important;
 }
+.video-js.vjs-fullscreen.vjs-user-inactive {
+  cursor: none;
+}
 /* Poster Styles */
 .vjs-poster {
   background-repeat: no-repeat;
@@ -662,6 +710,10 @@ body.vjs-full-window {
   max-height: 100%;
   padding: 0;
   width: 100%;
+}
+/* Hide the poster when native controls are used otherwise it covers them */
+.video-js.vjs-using-native-controls .vjs-poster {
+  display: none;
 }
 /* Text Track Styles */
 /* Overall track holder for both captions and subtitles */
@@ -693,36 +745,6 @@ body.vjs-full-window {
 .vjs-tt-cue {
   display: block;
 }
-/* Fading sytles, used to fade control bar. */
-.vjs-fade-in {
-  display: block !important;
-  /* Visibility needed to make sure things hide in older browsers too. */
-
-  visibility: visible;
-  opacity: 1;
-  /* transition */
-  -webkit-transition: visibility 0.1s, opacity 0.1s;
-  -moz-transition: visibility 0.1s, opacity 0.1s;
-  -o-transition: visibility 0.1s, opacity 0.1s;
-  transition: visibility 0.1s, opacity 0.1s;
-}
-.vjs-fade-out {
-  display: block !important;
-  visibility: hidden;
-  opacity: 0;
-  /* transition */
-  -webkit-transition: visibility 1.5s, opacity 1.5s;
-  -moz-transition: visibility 1.5s, opacity 1.5s;
-  -o-transition: visibility 1.5s, opacity 1.5s;
-  transition: visibility 1.5s, opacity 1.5s;
-  /* Wait a moment before fading out the control bar */
-
-  /* transition-delay */
-  -webkit-transition-delay: 2s;
-  -moz-transition-delay: 2s;
-  -o-transition-delay: 2s;
-  transition-delay: 2s;
-}
 /* Hide disabled or unsupported controls */
 .vjs-default-skin .vjs-hidden {
   display: none;
@@ -732,3 +754,6 @@ body.vjs-full-window {
   opacity: 1;
   visibility: visible;
 }
+/* -----------------------------------------------------------------------------
+The original source of this file lives at
+https://github.com/videojs/video.js/blob/master/src/css/video-js.less */
