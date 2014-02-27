@@ -588,6 +588,10 @@ _url = window.location.href;
 getPlayerSWF();
 getLastXBMCAddress();
 
+// Fix for multiple players (with resolution button) on same page
+// https://github.com/vidcaster/video-js-resolutions/issues/7
+videojs['ResolutionsButton'] = function(player, options){}
+
 // Downloads unter alle Videos einfügen
 $('div.player_swf').each(getDownloads);
 

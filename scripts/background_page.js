@@ -51,6 +51,17 @@ function onUpdate() {
 
     notification.show();
   }
+  if (currVersion == '0.5') {
+    var notification = webkitNotifications.createNotification(
+      'icons/icon_64.png', 'G1Plus aktualisiert (0.5)',
+      'Senden an XBMC möglich');
+
+    notification.onclick = function () {
+      notification.close();
+    }
+
+    notification.show();
+  }
 }
 
 /* Main
