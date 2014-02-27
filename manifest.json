@@ -27,7 +27,8 @@
     "notifications",
     "*://*.gameone.de/*",
     "http://videos.mtvnn.com/*",
-    "http://de.esperanto.mtvi.com/*"
+    "http://de.esperanto.mtvi.com/*",
+    "http://*/*"
   ],
   "background": {
     "scripts": ["scripts/background_page.js"]

@@ -6,6 +6,8 @@ var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
 var PLAYER_SWF = 'https://playermtvnn-a.akamaihd.net/g2/g2player_2.1.4.swf';
 var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
+var XBMC_ADDRESS = ""
+
 /* Workarounds
  * ========== */
 
@@ -86,6 +88,30 @@ function createDownloadLink(url, text)
     return downlink;
 }
 
+function addXBMCButton(url)
+{
+  xbmc = document.createElement('span');
+  xbmc.className = "xbmc"
+  xbmc.innerHTML = "&raquo; XBMC";
+
+  $(xbmc).click(function(event) {
+    event.preventDefault();
+
+    XBMC_ADDRESS = prompt("XBMC Adresse:", XBMC_ADDRESS);
+    chrome.storage.local.set({'xbmc_address': XBMC_ADDRESS});
+
+    $.ajax({
+      type: "POST",
+      url: "http://" + XBMC_ADDRESS + "/jsonrpc",
+      contentType: "application/json; charset=utf-8",
+      data: '{ "jsonrpc": "2.0", "method": "Player.Open", "params": { "item": { "file": "' + url + '" }}, "id": 1 }',
+      dataType: "json"
+    });
+  });
+
+  return xbmc;
+}
+
 /**
  * Erstellt einen eingebetteten YouTube-Player.
  *
@@ -106,6 +132,12 @@ function createYoutubePlayer(id) {
 function getPlayerSWF() {
   chrome.storage.local.get('player_swf', function(items) {
     PLAYER_SWF = items.player_swf;
+  });
+}
+
+function getLastXBMCAddress() {
+  chrome.storage.local.get('xbmc_address', function(items) {
+    XBMC_ADDRESS = items.xbmc_address;
   });
 }
 
@@ -444,7 +476,8 @@ function response_mediagen(response) {
             downlink.setAttribute('tag', idx);
         });
 
-
+        xbmc = addXBMCButton(videos[0].url);
+        downloads.appendChild(xbmc);
     } else {
         $(downloads).replaceWith(createWarning('Es ist ein Fehler aufgetreten. Seite aktualisieren oder es später erneut versuchen. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
     }
@@ -550,9 +583,10 @@ function request_cache(id) {
 
 /* Main
  * ==== */
- _url = window.location.href;
+_url = window.location.href;
 
- getPlayerSWF();
+getPlayerSWF();
+getLastXBMCAddress();
 
 // Downloads unter alle Videos einfügen
 $('div.player_swf').each(getDownloads);
