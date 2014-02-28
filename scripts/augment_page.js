@@ -88,7 +88,7 @@ function createDownloadLink(url, text)
     return downlink;
 }
 
-function addXBMCButton(url)
+function addXBMCButton(url, video_container)
 {
   xbmc = document.createElement('span');
   xbmc.className = "xbmc"
@@ -97,16 +97,39 @@ function addXBMCButton(url)
   $(xbmc).click(function(event) {
     event.preventDefault();
 
-    XBMC_ADDRESS = prompt("XBMC Adresse:", XBMC_ADDRESS);
-    chrome.storage.local.set({'xbmc_address': XBMC_ADDRESS});
+    input_address = prompt("XBMC Adresse:", XBMC_ADDRESS);
 
-    $.ajax({
-      type: "POST",
-      url: "http://" + XBMC_ADDRESS + "/jsonrpc",
-      contentType: "application/json; charset=utf-8",
-      data: '{ "jsonrpc": "2.0", "method": "Player.Open", "params": { "item": { "file": "' + url + '" }}, "id": 1 }',
-      dataType: "json"
-    });
+    if (XBMC_ADDRESS != '') {
+      XBMC_ADDRESS = input_address;
+      chrome.storage.local.set({'xbmc_address': XBMC_ADDRESS});
+
+      $.ajax({
+        type: "POST",
+        url: "http://" + XBMC_ADDRESS + "/jsonrpc",
+        contentType: "application/json; charset=utf-8",
+        data: '{"jsonrpc": "2.0", "method": "Player.Open", "params": { "item": { "file": "' + url + '" }}, "id": 1 }',
+        dataType: "json"
+      }).done(function(data) {
+        video_player = video_container.getElementsByTagName('video')[0]
+
+        currentTime = video_player.currentTime;
+        hours = Math.floor(currentTime/3600); currentTime = currentTime%3600;
+        minutes = Math.floor(currentTime/60); currentTime = currentTime%60;
+        seconds = Math.floor(currentTime);
+
+        $.ajax({
+          type: "POST",
+          url: "http://" + XBMC_ADDRESS + "/jsonrpc",
+          contentType: "application/json; charset=utf-8",
+          data: '{"jsonrpc": "2.0", "method": "Player.Seek", "playerid": 1,"params" : { "playerid": 1, "value": { ' +
+                '"hours": ' + hours + ', "minutes": ' + minutes + ', "seconds": ' + seconds + '}}, "id": 1 }',
+          dataType: "json"
+        });
+
+        // Pause playback and remove src to stop buffering
+        video_player.pause();
+      });
+    }
   });
 
   return xbmc;
@@ -237,14 +260,6 @@ function parseFlashvars(parameter) {
 }
 
 /**
- * Ändert die Source url des html5 Player
- * @param src  HTML5 Player element
- */
-function changeHTML5PlayerURL(player, video_src) {
-  player.src(video_src);
-}
-
-/**
  * Erzeugt einen HTML5-Player als Ersatz für den Flashplayer und erlaubt das zurückschalten
  */
 function createSwitchablePlayer(video_urls, download_container) {
@@ -290,10 +305,11 @@ function createSwitchablePlayer(video_urls, download_container) {
 
     if (this.textContent == '» Flash') {
       this.textContent = '» HTML5';
-      html5_player.src('');
+      html5_player.src = '';
     }
     else {
       this.textContent = '» Flash';
+      html5_player.src = '';
     }
     return false;
   });
@@ -476,8 +492,8 @@ function response_mediagen(response) {
             downlink.setAttribute('tag', idx);
         });
 
-        xbmc = addXBMCButton(videos[0].url);
-        downloads.appendChild(xbmc);
+        xbmc_button = addXBMCButton(videos[0].url, downloads.parentNode);
+        downloads.appendChild(xbmc_button);
     } else {
         $(downloads).replaceWith(createWarning('Es ist ein Fehler aufgetreten. Seite aktualisieren oder es später erneut versuchen. (<a href="http://g1plus.x10.mx/report/index.php?url=' + _url + '">Problem melden?</a>)'));
     }
