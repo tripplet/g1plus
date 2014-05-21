@@ -10,7 +10,6 @@ GameOne.de ist ein Portal rund um Videospiele, welches ständig neue Inhalte im 
 
 * Videos auf anderen Geräten mit nur unzureichender/fehlender Flash-Unterstützung (z.B. PS3) sehen
 * Videos offline sehen (z.B. auf Zugfahrten oder auf Reisen)
-* Videos die der Altersbeschränkung unterliegen auch innerhalb der Sperrzeiten sehen (einige Videos sind nur in einem bestimmten Zeitraum verfügbar, welcher jedoch nicht für alle günstig ist)
 * Videos durchgängig in der höchsten Qualität sehen ungeachtet der Bandbreite (bei schwacher Bandbreite passt der verwendete Player auf der Seite adaptiv die Qualität an, was dazu führt, dass sich ständig hohe und niedrige Qualität abwechseln)
 
 Disclaimer
