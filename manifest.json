@@ -1,6 +1,6 @@
 {
   "name": "g1plus",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "manifest_version": 2,
   "description": "Download-Links und Wiedergabe von Ab-18-Inhalten nach Altersverifikation für GameOne.de auch innerhalb der Sperrzeiten",
   "icons": {
