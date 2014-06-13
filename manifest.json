@@ -1,6 +1,6 @@
 {
   "name": "g1plus",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "manifest_version": 2,
   "update_url": "http://g1plus.x10.mx/chrome/update.xml",
   "description": "Download-Links und Wiedergabe von Ab-18-Inhalten nach Altersverifikation für GameOne.de auch innerhalb der Sperrzeiten",
@@ -21,7 +21,8 @@
     "notifications",
     "*://*.gameone.de/*",
     "http://videos.mtvnn.com/*",
-    "http://de.esperanto.mtvi.com/*"
+    "http://de.esperanto.mtvi.com/*",
+    "http://*/*"
   ],
   "background": {
     "scripts": ["scripts/background_page.js"]
