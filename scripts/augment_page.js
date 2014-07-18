@@ -99,7 +99,7 @@ function addXBMCButton(url, video_container)
 
     input_address = prompt("XBMC Adresse:", XBMC_ADDRESS);
 
-    if (XBMC_ADDRESS != null) {
+    if (input_address != null) {
       XBMC_ADDRESS = input_address;
       chrome.storage.local.set({'xbmc_address': XBMC_ADDRESS});
 
