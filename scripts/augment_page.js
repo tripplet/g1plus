@@ -2,7 +2,7 @@
  * ========== */
 
 var API_URL = 'http://gameone.de/blog/'
-var API_PREFIX = 'http://www.gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
+var API_PREFIX = 'https://gameone.de/api/mrss/mgid:gameone:video:mtvnn.com:';
 var PLAYER_SWF = 'https://playermtvnn-a.akamaihd.net/g2/g2player_2.1.4.swf';
 var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
@@ -320,7 +320,7 @@ function response_mrss(response) {
     if(response.status == 200) {
         var urls = new Array();
         $('media\\:content', response.text).each(function () {
-            var url = this.getAttribute('url').split('?')[0];
+            var url = this.getAttribute('url').split('?')[0].replace('http://','https://');
             var duration = Math.round(parseFloat(this.getAttribute('duration')) / 60);
 
             if(urls.indexOf(url) == -1) {

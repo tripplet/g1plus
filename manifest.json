@@ -20,8 +20,8 @@
     "webRequestBlocking",
     "notifications",
     "*://*.gameone.de/*",
-    "http://videos.mtvnn.com/*",
-    "http://de.esperanto.mtvi.com/*",
+    "*://videos.mtvnn.com/*",
+    "*://de.esperanto.mtvi.com/*",
     "http://*/*"
   ],
   "background": {
