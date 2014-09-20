@@ -8,19 +8,6 @@ var GAMETRAILERS_URL = 'http://trailers.gametrailers.com/gt_vault';
 
 var XBMC_ADDRESS = "192.168.xxx.xxx"
 
-/* Workarounds
- * ========== */
-
-/** Bugfix for Webkit/Safari/Chrome with jQuery >= 1.7 for xml namespace $.find()
- * http://stackoverflow.com/questions/853740/jquery-xml-parsing-with-namespaces
- * http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
- */
-$.fn.filterNode = function(name) {
-  return this.find('*').filter(function() {
-    return this.nodeName === name;
-  });
-};
-
 /* Funktionen
  * ========== */
 
